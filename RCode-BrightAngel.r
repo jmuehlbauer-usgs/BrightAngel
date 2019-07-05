@@ -97,10 +97,7 @@ spp <- read.csv(paste0(gitdat, 'SpeciesList.csv'))
 dat <- lapply(dat, transform, Date = as.Date(Date))
 
 ## Give Whiting Data a barcode name for consistency
-dat$Whiting$BarcodeID <- paste(dat$Whiting$SampleID, dat$Whiting$Date)
-
-## Sort by SampleID then SpeciesID
-dat <- lapply(dat, function(x) x[order(x[, 'BarcodeID'], x[, 'SpeciesID']),]) 
+dat$Whiting$BarcodeID <- paste(dat$Whiting$Date, dat$Whiting$SampleID)
 
 ## Add functional feeding groups
 dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
@@ -108,48 +105,39 @@ dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 ## Add sample area and raw counts to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
 dat$Whiting$Area <- 0.086 * 2
-dat$Whiting$CountTotal <- dat$Whiting$Density * dat$Whiting$Area * 2
+dat$Whiting$CountTotal <- dat$Whiting$Density * dat$Whiting$Area
 colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
 
-
+## Keep only columns of interest
+dat0 <- lapply(dat, function(x){
+	mycols <- c('BarcodeID', 'Date', ifelse('Density' %in% colnames(x), 'Area', 'Volume'), 'SpeciesID', 
+		'FFG', 'CountTotal')
+	x[, mycols]
+	})
+dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Unit', 'SpeciesID', 'FFG', 'Count'))
 
 ##### Clean up taxa #####
 
 ## Get taxa list of present taxa
-taxa <- rbind(spp[spp$SpeciesID %in% dat$Drift$SpeciesID,c('SpeciesID', 'Description')], 
-	spp[spp$SpeciesID %in% dat$Benthic$SpeciesID, c('SpeciesID', 'Description')], 
-	spp[spp$SpeciesID %in% dat$Whiting$SpeciesID,c('SpeciesID', 'Description')])
+taxa <- rbind(spp[spp$SpeciesID %in% dat0$Drift$SpeciesID,c('SpeciesID', 'Description')], 
+	spp[spp$SpeciesID %in% dat0$Benthic$SpeciesID, c('SpeciesID', 'Description')], 
+	spp[spp$SpeciesID %in% dat0$Whiting$SpeciesID,c('SpeciesID', 'Description')])
 	taxa <- taxa[match(unique(taxa$SpeciesID), taxa$SpeciesID),]
 	taxa <- taxa[order(taxa$Description),]
 
 ## Convert all taxa in different life stages to same Species ID (e.g., CHIL, CHIP, CHIA all become CHIA)
-dat1 <- lapply(dat, transform, SpeciesID = as.character(SpeciesID))
-origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'WIEA', 'SIMA', 'SIMP', 'BASP', 'BAET', 'LEPA', 
+dat1 <- lapply(dat0, transform, SpeciesID = as.character(SpeciesID))
+origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'CULP', 'WIEA', 'SIMA', 'SIMP', 'BASP', 'BAET', 'LEPA', 
 	'CAPA', 'TRIA', 'TRIP', 'HYSP', 'HYDA')
-newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'WIEL', 'SIML', 'SIML', 'BAEL', 'BAEL', 'LEPL', 
+newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'CULL', 'WIEL', 'SIML', 'SIML', 'BAEL', 'BAEL', 'LEPL', 
 	'CAPL', 'TRIL', 'TRIL', 'HYDE', 'HYDL')
 dat1 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt, 
 	newt[match(SpeciesID, origt)], SpeciesID))
 
-## Combine rows of same taxa from different life stages
-dat2 <- dat1
-for(i in 1:3){
-	t1 <- dat1[[i]]
-	cols <- ifelse(names(dat1)[i] == 'Drift', c(33:74, 76),
-		ifelse(names(dat1)[i] == 'Benthic', c(18:69, 71), 4))
-	BarSpp <- paste(t1$BarcodeID, t1$SpeciesID)
-	t2 <- t1[match(unique(BarSpp), BarSpp),]
-	t2[, cols] <- aggregate(t1[, cols], by = list(t1$SpeciesID, t1$BarcodeID), sum)[, c(-1, -2)]
-	dat2[[i]] <- t2
-}
-
-## Limit to only aquatic taxa
-dat3 <- lapply(dat2, function(x){x[x[, 'SpeciesID'] %in% spp[spp$Habitat == 'Aquatic', 'SpeciesID'],]})
-
 ## Build table to look for congenerics to combine (only Whiting and Benthic)
 	## Note: Due to possible errors/discrepancies between our data and Whiting's that aren't real.
-unq <- unique(unlist(lapply(dat3, function(x) unique(x[,'SpeciesID']))))
-cnt <- lapply(dat3, function(x) tapply(x[, 'CountTotal'], x[, 'SpeciesID'], sum))
+unq <- unique(unlist(lapply(dat1, function(x) unique(x[,'SpeciesID']))))
+cnt <- lapply(dat1, function(x) tapply(x[, 'Count'], x[, 'SpeciesID'], sum))
 spptab <- data.frame(SpeciesID = unq, Drift = NA, Benthic = NA, Whiting = NA)
 	spptab$Description <- spp[match(spptab$SpeciesID, spp$SpeciesID), 'Description']
 for(i in 1:3){
@@ -168,12 +156,52 @@ origt1 <- c('ELML', 'ELOA', 'PROB', 'HEMR', 'WIEL', 'SILV', 'TABS', 'DICL', 'DRA
 	'CAPL', 'TRIL', 'HYOS', 'HYDL', 'HYLA', 'POLY', 'RHCL')
 newt1 <- c('MCYL', 'MCYL', 'CERL', 'EMPL', 'EMPL', 'TABL', 'TABL', 'TIPL', 'LIBE', 'ARGI', 'ARGI', 
 	'CAPN', 'HYDE', 'HYDE', 'LETR', 'LETR', 'POLL', 'RHYL')
-dat4 <- lapply(dat3, transform, SpeciesID = ifelse(SpeciesID %in% origt1, 
+dat2 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt1, 
 	newt1[match(SpeciesID, origt1)], SpeciesID))
 
-## Cut oddballs
-dat4 <- lapply(dat4, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RHAG', 'CLAM')),])
+## Cut oddballs, delete 0 count rows
+dat2 <- lapply(dat2, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RHAG', 'CLAM')),])
+dat2 <- lapply(dat2, function(x) x[x[, 'Count'] != 0,])
+
+## Combine rows of same taxa from different life stages
+dat3 <- dat2
+for(i in 1:3){
+	t1 <- dat2[[i]]
+		t1$BarSpp <- paste(t1$BarcodeID, t1$SpeciesID)
+	t2 <- t1[match(unique(t1$BarSpp), t1$BarSpp),]
+	t3 <- aggregate(t1$Count, by = list(t1$BarSpp), sum)
+	t2$Count <- t3[match(t2$BarSpp, t3[, 1]), 2]
+	t2$FFG <- spp[match(t2$SpeciesID, spp$SpeciesID), 'FFG']
+	dat3[[i]] <- subset(t2, select = -BarSpp)
+}
+
+## Limit to only aquatic taxa
+dat4 <- lapply(dat3, function(x){x[x[, 'SpeciesID'] %in% spp[spp$Habitat == 'Aquatic', 'SpeciesID'],]})
+
+## Reassign FFGs in case any got messed up by the SpeciesID combining
+dat4 <- lapply(dat4, function(x){
+	x[,'FFG'] <- spp[match(x[, 'SpeciesID'], spp$SpeciesID), 'FFG']
+	return(x)
+	})
+
+# Convert SpeciesIDs back to factors
+dat4 <- lapply(dat4, transform, SpeciesID = as.factor(SpeciesID))
+
+## Sort by SampleID then SpeciesID, drop old factor levels
+dat4 <- lapply(dat4, function(x) x[order(x[, 'BarcodeID'], x[, 'SpeciesID']),])
 	dat4 <- lapply(dat4, droplevels)
+
+## Add consistent factor levels
+levspp <- unique(unlist(lapply(dat4, function(x) levels(x[, 'SpeciesID']))))
+levFFG <- unique(unlist(lapply(dat4, function(x) levels(x[, 'FFG']))))
+dat4 <- lapply(dat4, function(x){
+	levspp1 <- levspp[!(levspp %in% levels(x[, 'SpeciesID']))]
+	levFFG1 <- levFFG[!(levFFG %in% levels(x[, 'FFG']))]
+	levels(x[, 'SpeciesID']) <- c(levels(x[, 'SpeciesID']), levspp[!(levspp %in% levels(x[, 'SpeciesID']))])
+	levels(x[, 'FFG']) <- c(levels(x[, 'FFG']), levFFG[!(levFFG %in% levels(x[, 'FFG']))])
+	return(x)
+	})
+
 
 
 ### Stopped here. What follows is unverified and probably needs fixing. Above need to combine life stages for d1, b1, w1.
