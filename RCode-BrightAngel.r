@@ -1,5 +1,5 @@
 ##### Bright Angel trophic cascade analysis #####
-## Last updated 1 July 2019 by J.D. Muehlbauer
+## Last updated 5 July 2019 by J.D. Muehlbauer
 
 
 ##### Set up workspace ##### 
