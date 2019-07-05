@@ -105,6 +105,13 @@ dat <- lapply(dat, function(x) x[order(x[, 'BarcodeID'], x[, 'SpeciesID']),])
 ## Add functional feeding groups
 dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 
+## Add sample area and raw counts to Whiting data
+	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
+dat$Whiting$Area <- 0.086 * 2
+dat$Whiting$CountTotal <- dat$Whiting$Density * dat$Whiting$Area * 2
+colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
+
+
 
 ##### Clean up taxa #####
 
@@ -117,11 +124,10 @@ taxa <- rbind(spp[spp$SpeciesID %in% dat$Drift$SpeciesID,c('SpeciesID', 'Descrip
 
 ## Convert all taxa in different life stages to same Species ID (e.g., CHIL, CHIP, CHIA all become CHIA)
 dat1 <- lapply(dat, transform, SpeciesID = as.character(SpeciesID))
-origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'WIEA', 'SIMA', 'BASP', 'LEPA', 
+origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'WIEA', 'SIMA', 'SIMP', 'BASP', 'BAET', 'LEPA', 
 	'CAPA', 'TRIA', 'TRIP', 'HYSP', 'HYDA')
-newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'WIEL', 'SIML', 'BAEL', 'LEPL', 
+newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'WIEL', 'SIML', 'SIML', 'BAEL', 'BAEL', 'LEPL', 
 	'CAPL', 'TRIL', 'TRIL', 'HYDE', 'HYDL')
-repl1 <- cbind(origt, newt)
 dat1 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt, 
 	newt[match(SpeciesID, origt)], SpeciesID))
 
@@ -140,6 +146,34 @@ for(i in 1:3){
 ## Limit to only aquatic taxa
 dat3 <- lapply(dat2, function(x){x[x[, 'SpeciesID'] %in% spp[spp$Habitat == 'Aquatic', 'SpeciesID'],]})
 
+## Build table to look for congenerics to combine (only Whiting and Benthic)
+	## Note: Due to possible errors/discrepancies between our data and Whiting's that aren't real.
+unq <- unique(unlist(lapply(dat3, function(x) unique(x[,'SpeciesID']))))
+cnt <- lapply(dat3, function(x) tapply(x[, 'CountTotal'], x[, 'SpeciesID'], sum))
+spptab <- data.frame(SpeciesID = unq, Drift = NA, Benthic = NA, Whiting = NA)
+	spptab$Description <- spp[match(spptab$SpeciesID, spp$SpeciesID), 'Description']
+for(i in 1:3){
+	spptab[, i + 1][match(names(cnt[[i]]), spptab$SpeciesID)] <- cnt[[i]]
+}
+spptabW <- spptab[order(-spptab$Benthic, -spptab$Benthic, spptab$SpeciesID),]
+spptabB <- spptab[order(-spptab$Whiting, -spptab$Benthic, spptab$SpeciesID),]
+spptab1 <- spptab[order(spptab$Description),]
+	## Note: Whiting saw Chloroperlidae, which we didn't, but there is no obvious substitution.
+	## Cutting Nematoda, Lymnaeidae, Veliidae, Veneroida, which Whiting doesn't have 
+		## (probably didn't count them).
+	## Whiting probably didn't separate Empidid or Tabanid taxa
+
+## Combine congenerics
+origt1 <- c('ELML', 'ELOA', 'PROB', 'HEMR', 'WIEL', 'SILV', 'TABS', 'DICL', 'DRAL', 'DAML', 'COEN', 
+	'CAPL', 'TRIL', 'HYOS', 'HYDL', 'HYLA', 'POLY', 'RHCL')
+newt1 <- c('MCYL', 'MCYL', 'CERL', 'EMPL', 'EMPL', 'TABL', 'TABL', 'TIPL', 'LIBE', 'ARGI', 'ARGI', 
+	'CAPN', 'HYDE', 'HYDE', 'LETR', 'LETR', 'POLL', 'RHYL')
+dat4 <- lapply(dat3, transform, SpeciesID = ifelse(SpeciesID %in% origt1, 
+	newt1[match(SpeciesID, origt1)], SpeciesID))
+
+## Cut oddballs
+dat4 <- lapply(dat4, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RHAG', 'CLAM')),])
+	dat4 <- lapply(dat4, droplevels)
 
 
 ### Stopped here. What follows is unverified and probably needs fixing. Above need to combine life stages for d1, b1, w1.
