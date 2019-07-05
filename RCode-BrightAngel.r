@@ -102,6 +102,9 @@ dat$Whiting$BarcodeID <- paste(dat$Whiting$Date, dat$Whiting$SampleID)
 ## Add functional feeding groups
 dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 
+## Add season
+dat <- lapply(dat, transform, Season = ifelse(month(Date) == 11, '1-November', 
+	ifelse(month(Date) == 1, '2-January', ifelse(month(Date) == 6, '3-June', '4-September'))))
 ## Add sample area and raw counts to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
 dat$Whiting$Area <- 0.086 * 2
@@ -110,11 +113,11 @@ colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
 
 ## Keep only columns of interest
 dat0 <- lapply(dat, function(x){
-	mycols <- c('BarcodeID', 'Date', ifelse('Density' %in% colnames(x), 'Area', 'Volume'), 'SpeciesID', 
-		'FFG', 'CountTotal')
+	mycols <- c('BarcodeID', 'Date', 'Season', ifelse('Density' %in% colnames(x), 'Area', 'Volume'),
+		'SpeciesID', 'FFG', 'CountTotal')
 	x[, mycols]
 	})
-dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Unit', 'SpeciesID', 'FFG', 'Count'))
+dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count'))
 
 ##### Clean up taxa #####
 
@@ -164,16 +167,21 @@ dat2 <- lapply(dat2, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RH
 dat2 <- lapply(dat2, function(x) x[x[, 'Count'] != 0,])
 
 ## Combine rows of same taxa from different life stages
-dat3 <- dat2
-for(i in 1:3){
-	t1 <- dat2[[i]]
-		t1$BarSpp <- paste(t1$BarcodeID, t1$SpeciesID)
-	t2 <- t1[match(unique(t1$BarSpp), t1$BarSpp),]
-	t3 <- aggregate(t1$Count, by = list(t1$BarSpp), sum)
-	t2$Count <- t3[match(t2$BarSpp, t3[, 1]), 2]
-	t2$FFG <- spp[match(t2$SpeciesID, spp$SpeciesID), 'FFG']
-	dat3[[i]] <- subset(t2, select = -BarSpp)
+combinefx <- function(oldlist, groupby){
+	tlist <- list()
+	for(i in 1:length(oldlist)){
+		t1 <- oldlist[[i]]
+			t1$BarGrp <- paste(t1$BarcodeID, t1[,groupby])
+		t2 <- t1[match(unique(t1$BarGrp), t1$BarGrp),]
+		t3 <- aggregate(t1$Count, by = list(t1$BarGrp), sum)
+		t2$Count <- t3[match(t2$BarGrp, t3[, 1]), 2]
+		tlist[[i]] <- subset(t2, select = -BarGrp)
+	}
+	names(tlist) <- names(oldlist)
+	return(tlist)
 }
+dat3 <- combinefx(dat2, 'SpeciesID')
+	dat3 <- lapply(dat3, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 
 ## Limit to only aquatic taxa
 dat4 <- lapply(dat3, function(x){x[x[, 'SpeciesID'] %in% spp[spp$Habitat == 'Aquatic', 'SpeciesID'],]})
@@ -203,10 +211,39 @@ dat4 <- lapply(dat4, function(x){
 	})
 
 
-
-### Stopped here. What follows is unverified and probably needs fixing. Above need to combine life stages for d1, b1, w1.
-
 ##### Group specimens by FFG #####
+
+## Create new list, with samples summed by FFG
+ffg <- combinefx(dat4, 'FFG')
+	ffg <- lapply(ffg, subset, select = -SpeciesID)
+
+## Get relative counts
+ffg <- lapply(ffg, function(x){
+	totals <- tapply(x[, 'Count'], x[, 'BarcodeID'], sum)
+	x[, 'Relative'] <- round(x[, 'Count'] / totals[match(x[, 'BarcodeID'], names(totals))], 4)
+	return(x)
+	})
+
+
+##### Plot FFGs by season #####
+
+## Get mean, standard error, and relative mean by FFG, by season
+ffgmn <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
+ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), 
+	function(x) sd(x) / sqrt(length(x))), 4))
+ffgrel <- lapply(ffg, function(x) round(tapply(x[, 'Relative'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+
+## Make a rough barplot of relative counts
+par(mfrow = c(2, 1))
+barplot(ffgmn$Whiting)
+barplot(ffgmn$Benthic, legend.text = TRUE)
+	### Stopped here. What follows is unverified and probably needs fixing.
+	### Might consider doing assumed trophic level instead of ffg.
+
+
+barplot(ffgmn$Benthic)
+lapply(FFG, function(x) tapply(x[, 'Count'], x[, 'SpeciesID'], sum))
+
 
 ## Combine data by FFG for benthics, drift, and Whiting
 dffg <- tapply(d1$Concentration, d1$FFG, function(x){sum(x, na.rm = TRUE)})
