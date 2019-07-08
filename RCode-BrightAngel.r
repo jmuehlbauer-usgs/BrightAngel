@@ -284,8 +284,7 @@ plotdiff <- function(){
 	}
 }
 plotTypes(plotdiff, 'ObservedDifferences', 'Figures')
-	## Panels are pretty similar (which is good). 
-	## Probably should just use relative abundance moving forward.
+	## Panels are pretty similar (which is good).
 	
 	
 ##### Build model for FFG change #####
@@ -339,7 +338,6 @@ fitdiff <- fitsg$Density - fitsw$Density
 	names(fitdiff) <- fitsw$FFG
 fitperc <- round(fitdiff / fitsw$Density, 4)
 
-
 ## Plot panel graph of Whiting's and our data
 plotpred <- function(){
 	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
@@ -383,3 +381,82 @@ plotpreddiff <- function(){
 	points(1:6, fitperc, pch = 16, cex = 1.5)
 }
 plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
+
+
+##### Ordination analysis #####
+
+## Put Whiting and our bnethic data in a single dataframe
+ord1 <- rbind(dat4$Whiting, dat4$Benthic)
+	ord1$Density <- round(ord1$Count / ord1$Unit)
+	ord1$Study <- factor(ifelse(year(ord1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
+
+## Get data in an ordination-friendly matrix
+ord2 <- matrix(nrow = length(unique(ord1$BarcodeID)), ncol = length(unique(ord1$SpeciesID)))
+	rows <- rownames(ord2) <- sort(unique(ord1$BarcodeID))
+	cols <- colnames(ord2) <- sort(unique(ord1$SpeciesID))
+	ord2[is.na(ord2)] <- 0
+rownum <-match(ord1$BarcodeID, rows)
+colnum <- match(ord1$SpeciesID, cols)
+for(i in 1 : dim(ord1)[1]){
+	ord2[rownum[i], colnum[i]] <- ord1$Density[i]
+}
+
+## Check cvs
+cv2 <- cv(ord2)
+	## 90% by row and 232% by columns. Not horrendous.
+
+## Remove rare species
+ord3 <- delRare(ord2)
+	delspp <- colnames(ord2)[colnames(ord2) %in% colnames(ord3) == FALSE]
+	## Removed 3 taxa (DIXL, LIBE, TINL).
+cv3 <- cv(ord3)
+	## Dropped cv on columns to 219%.
+
+## Relativize by species max
+ord4 <- rel(ord3)
+cv4 <- cv(ord4)
+	## Dropped cv on columns to 54%, but increased cv on rows to 97%.
+	## Probably OK for analysis from this point.
+
+## Run an NMS with stepdown
+NMS(ord4, maxruns = 10000)
+0
+	## Scree plot is typical; suggests 2-3 dimensions would be best.
+	## Going to work with 2D for ease
+pts2D <- read.csv('NMS Output/NMSPoints2D.csv', row.names = 1)
+spp2D <- read.csv('NMS Output/NMSSpecies2D.csv', row.names = 1)
+
+## Check axes R2 of 2D solution
+r2 <- axisR2(ord4, pts2D)
+	## 80% of total variation is explained by the 2 axis (66% on Axis 1). Pretty good.
+
+## Build a matrix of grouping variables
+unqrow <- match(unique(rownum), rownum)
+env1 <- ord1[unqrow, c('Study', 'Season')]
+	rownames(env1) <- ord1[unqrow, 'BarcodeID']
+
+## See how groupings load on the ordination
+envpts <- envfit(pts2D, env1)
+	## 24% for pre-post and 17% for season. Neither is great.
+
+## See how taxa load on the ordination
+envspp <- envfit(pts2D, ord4)
+envspp1 <- data.frame(round(cbind(envspp$vectors[[1]], envspp$vectors[[2]], envspp$vectors[[4]]), 4))
+	colnames(envspp1) <- c('Axis1', 'Axis2', 'R2', 'p')
+	envspp1 <- envspp1[order(-envspp1$R2),]
+
+## Limit to only taxa with R2 >= 25%
+envspp2 <- envspp1[envspp1$R2 >= 0.25,]
+
+## Plot groupings on ordination
+plotord <- function(){
+	par(mfrow = c(1, 1), mar = c(4, 4, 0.1, 0.1), cex = 1)
+	plot(pts2D, type = 'n', xlab = 'Axis 1', ylab = 'Axis 2', axes = FALSE)
+	axis(1)
+	axis(2, las = 2)
+	box(bty = 'l')
+	points(pts2D, col = as.numeric(env1$Study) + 1, pch = as.numeric(env1$Season) + 14)
+	legend('topright', legend = c('2011', '2016', levels(env1$Season)), col = c(2, 3, rep(1, 4)), 
+		pch = c(rep(15, 2), 15:18), pt.cex = c(1.5, 1.5, rep(1, 4)), bty = 'n')
+}
+plotTypes(plotord, 'Ordination', 'Figures', height = 6.5)
