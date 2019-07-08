@@ -103,8 +103,9 @@ dat$Whiting$BarcodeID <- paste(dat$Whiting$Date, dat$Whiting$SampleID)
 dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 
 ## Add season
-dat <- lapply(dat, transform, Season = ifelse(month(Date) == 11, '1-November', 
-	ifelse(month(Date) == 1, '2-January', ifelse(month(Date) == 6, '3-June', '4-September'))))
+dat <- lapply(dat, transform, Season = factor(ifelse(month(Date) == 11, 'November', 
+	ifelse(month(Date) == 1, 'January', ifelse(month(Date) == 6, 'June', 'September'))),
+	levels = c('November', 'January', 'June', 'September')))
 ## Add sample area and raw counts to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
 dat$Whiting$Area <- 0.086 * 2
@@ -214,7 +215,6 @@ dat4 <- lapply(dat4, function(x){
 		'CollectorGatherer', 'Generalist', 'Predator'))
 	return(x)
 	})
-levels(dat4$Whiting$SpeciesID)
 
 
 ##### Group specimens by FFG #####
@@ -231,13 +231,65 @@ ffg <- lapply(ffg, function(x){
 	})
 
 
-##### Plot FFGs by season #####
+##### Get some basic stats #####
 
 ## Get mean, standard error, and relative mean by FFG, by season
 ffgmn <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
 ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), 
 	function(x) sd(x) / sqrt(length(x))), 4))
+ffgunit <- lapply(ffg, function(x) 
+	round(tapply(x[, 'Count'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
 ffgrel <- lapply(ffg, function(x) round(tapply(x[, 'Relative'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+
+ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
+	names(ffgstat) <- c('MeanCount', 'SEM', 'MeanUnit', 'MeanRelative')
+	ffgstat <- lapply(ffgstat, function(x){
+		lapply(x, function(y){
+			y[is.na(y)] <- 0
+			return(y)
+		})
+	})	
+	
+## Get difference in relative abundance and absolute density across seasons
+diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelative')], 
+	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
+diff2 <- lapply(diff1, function(x){
+	data.frame(Mean = round(rowMeans(x), 4), 
+		SEM = round(apply(x, 1, function(y) sd(y) / sqrt(length(y))), 4))
+	})
+
+## Plot differernce in absolute density
+
+
+## Plot difference in relative abundance from Whiting to our study
+plotdiff <- function(){
+	par(mfrow = c(2, 1), mar = c(3, 5, 0.1, 0.1))
+	for(i in 1:2){
+		plot(c(1, 6), c(min(diff2[[i]]$Mean - diff2[[i]]$SEM), max(diff2[[i]]$Mean + diff2[[i]]$SEM)), 
+		xlab = '', ylab = '', axes = FALSE, type = 'n')
+		if(i == 1){
+			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+			axis(2, las = 2)
+			mtext(side = 2, bquote('Difference in density ('~m^-2*')'), line = 3.5)
+		} else{
+			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = c('Shredder', 'Scraper/\nGrazer', 
+				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
+			axis(2, las = 2, at = seq(-0.1, 0.3, 0.1), labels = paste0(seq(-0.1, 0.3, 0.1) * 100, '%'))
+			mtext(side = 2, 'Difference in relative abundance', line = 3.7)
+		}
+	abline(h = 0, lty = 2)
+	box(bty = 'l')
+	points(diff2[[i]]$Mean, pch = 16, cex = 1.5)
+	with(diff2[[i]], arrows(x0 = 1:6, y0 = Mean - SEM, y1 = Mean + SEM, code = 3, angle = 90, length = 0.05))
+	}
+}
+plotdiff()
+	## Panels are pretty similar (which is good). 
+	## Probably should just use relative abundance moving forward.
+
+##### Plot FFGs by season #####
+
+
 
 ## Make a rough barplot of relative counts
 par(mfrow = c(2, 1))
