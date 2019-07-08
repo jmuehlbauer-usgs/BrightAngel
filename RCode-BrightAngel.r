@@ -15,6 +15,9 @@ if(Sys.info()[6]=='jmuehlbauer'){
 	setwd('C:/Users/mdaubert/Documents/Bright Angel/R')
 }
 
+## Create folder for putting figures in
+dir.create('Figures', showWarnings = FALSE)
+
 
 ##### Read in data #####
 
@@ -230,9 +233,6 @@ ffg <- lapply(ffg, function(x){
 	return(x)
 	})
 
-
-##### Get some basic stats #####
-
 ## Get mean, standard error, and relative mean by FFG, by season
 ffgmn <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
 ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), 
@@ -249,8 +249,11 @@ ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
 			return(y)
 		})
 	})	
-	
-## Get difference in relative abundance and absolute density across seasons
+
+
+##### Look at differences by FFG over time #####
+
+## Get difference in absolute density and relative abundance from Whiting to our study
 diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelative')], 
 	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
 diff2 <- lapply(diff1, function(x){
@@ -258,12 +261,9 @@ diff2 <- lapply(diff1, function(x){
 		SEM = round(apply(x, 1, function(y) sd(y) / sqrt(length(y))), 4))
 	})
 
-## Plot differernce in absolute density
-
-
-## Plot difference in relative abundance from Whiting to our study
+## Plot difference in absolute density and relative abundance
 plotdiff <- function(){
-	par(mfrow = c(2, 1), mar = c(3, 5, 0.1, 0.1))
+	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
 	for(i in 1:2){
 		plot(c(1, 6), c(min(diff2[[i]]$Mean - diff2[[i]]$SEM), max(diff2[[i]]$Mean + diff2[[i]]$SEM)), 
 		xlab = '', ylab = '', axes = FALSE, type = 'n')
@@ -283,85 +283,103 @@ plotdiff <- function(){
 	with(diff2[[i]], arrows(x0 = 1:6, y0 = Mean - SEM, y1 = Mean + SEM, code = 3, angle = 90, length = 0.05))
 	}
 }
-plotdiff()
+plotTypes(plotdiff, 'ObservedDifferences', 'Figures')
 	## Panels are pretty similar (which is good). 
 	## Probably should just use relative abundance moving forward.
+	
+	
+##### Build model for FFG change #####
 
-##### Plot FFGs by season #####
+## Combine benthic and Whiting into single dataframe for analysis
+ffg1 <- rbind(ffg$Whiting, ffg$Benthic)
+	ffg1$Study <- factor(ifelse(year(ffg1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
+## Find best data distribution (family) to use
+lm1 <- glm(Count ~ 1 + offset(Unit), data = ffg1)
+nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = ffg1)
+po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = ffg1)
+	AIC(lm1, nb1, po1)
+	## Negative binomial clearly the best choice
 
+## Add a random effect for sample or season
+nb2 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
+nb3 <- glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
+	AIC(nb1, nb2, nb3)
+	## Season helps. Barcode doesn't.
 
-## Make a rough barplot of relative counts
-par(mfrow = c(2, 1))
-barplot(ffgmn$Whiting)
-barplot(ffgmn$Benthic, legend.text = TRUE)
-	### Stopped here. What follows is unverified and probably needs fixing.
-	### Might consider doing assumed trophic level instead of ffg.
+## Add pre-post and FFG fixed effects
+nb4 <- glmmTMB(Count ~ FFG + (1 | Season) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
+nb5 <- glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = ffg1)
+nb6 <- glmmTMB(Count ~ FFG + Study + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = ffg1)
+nb7 <- glmmTMB(Count ~ FFG * Study + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = ffg1)
+	AIC(nb1, nb3, nb4, nb5, nb6, nb7)
 
+## Get parameters to predict
+flen <- length(levels(ffg1$FFG))
+tlen <- length(levels(ffg1$Study))
+elen <- length(levels(ffg1$Season))
+predparm <- data.frame(FFG = rep(levels(ffg1$FFG), tlen * elen),
+	Study = rep(levels(ffg1$Study), rep(flen * elen, tlen)),
+	Season = rep(rep(levels(ffg1$Season), rep(flen, elen)), tlen), Unit = 1)
 
-barplot(ffgmn$Benthic)
-lapply(FFG, function(x) tapply(x[, 'Count'], x[, 'SpeciesID'], sum))
-
-
-## Combine data by FFG for benthics, drift, and Whiting
-dffg <- tapply(d1$Concentration, d1$FFG, function(x){sum(x, na.rm = TRUE)})
-bffg <- tapply(b1$Density, b1$FFG, function(x){sum(x, na.rm = TRUE)})
-wffg <- tapply(w1$Density, w1$FFG, function(x){sum(x, na.rm = TRUE)})
-
-## Combine all data streams, sort by trophic level
-ffg <- as.data.frame(cbind(dffg, bffg, wffg))
-	rownames(ffg)[1] <- 'Unknown'
-ffg1 <- ffg[rownames(ffg) %in% c('Shredder', 'CollectorFilterer', 'CollectorGatherer', 'ScraperGrazer', 'Generalist', 'Predator'),]
-ffg2 <- ffg1[c(6, 1, 2, 5, 3, 4),]
-	colnames(ffg2) <- c('Drift', 'Benthic', 'Whiting')
-
-
-panel <- function(){}
-par(mfrow = c(2, 1), mar = c(1.5, 5.5, 0.1, 0.1), oma = c(3.2, 0, 0, 0), xpd = FALSE)
-
-
-wbar <- barplot(ffg2$Whiting, axes = FALSE, xlab = '', ylab = '', names.arg = FALSE, col = 'tomato')
-box(bty = 'l')
-axis(1, at = wbar, labels = rep('', length(wbar)))
-axis(2, las = 2)
-mtext(side = 2, expression(paste('Density (# * ', m^-2, ')')), line = 4)
-legend('topleft', legend = '2010-2011', bty = 'n')
-
-
-bbar <- barplot(ffg2$Benthic, axes = FALSE, xlab = '', ylab = '', names.arg = FALSE, col = 'slateblue1')
-box(bty = 'l')
-axis(1, at = bbar, labels = c('Shredders\n', 'Collector-\nfilterers', 'Collector-\ngatherers', 'Scrapers/\nGrazers', 'Generalists\n', 'Predators\n'), padj = 0.5)
-axis(2, las = 2)
-mtext(side = 2, expression(paste('Density (# * ', m^-2, ')')), line = 4)
-mtext(side = 1, 'Functional feeding group', line = 3.5)
-legend('topleft', legend = '2016-2017', bty = 'n')
-
-
-
-
-###Calculating relative densities
-
-ffg2$BenthicRel <- round(ffg2$Benthic / sum(ffg2$Benthic), 4)
-ffg2$WhitingRel <- round(ffg2$Whiting / sum(ffg2$Whiting), 4)
-#Note that I've combined a couple functions onto a single line of code (rather than calculating the sum on a separate line as I suggested over the phone). The result is the same, this is just a little cleaner. I've also included the round function, which just rounds the results the the specified number of decimal places (4 in this case).
-
-#Subtracting Whitings from ours to see if there was an increase or decrease in densities.
-ffg2$BenthicRel - ffg2$WhitingRel
-Reldif <- (ffg2$BenthicRel - ffg2$WhitingRel) 
+predparm <- data.frame(FFG = rep(levels(ffg1$FFG), tlen),
+	Study = rep(levels(ffg1$Study), rep(flen, tlen)), Unit = 1, Season = 'Generic')
+	
+## Get model-predicted values and confidence intervals
+preds <- predict(nb7, predparm, type = 'link', se.fit = TRUE, allow.new.levels = TRUE)
+predupr <- round(exp(preds$fit + (qnorm(0.975) * preds$se.fit)))
+predlwr <- round(exp(preds$fit - (qnorm(0.975) * preds$se.fit)))
+fits2 <- data.frame(predparm, Density = round(exp(preds$fit)), CILower = predlwr, CIUpper = predupr)
+fitsw <- fits2[1 : (dim(fits2)[1] / 2), ]
+fitsg <- fits2[(1 + (dim(fits2)[1] / 2)) : dim(fits2)[1], ]
+fitdiff <- fitsg$Density - fitsw$Density
+	names(fitdiff) <- fitsw$FFG
+fitperc <- round(fitdiff / fitsw$Density, 4)
 
 
-###Barplotting the difference in relative densities 
-Relbar <- barplot(Reldif, axes = FALSE, xlab = '', ylab = '', names.arg = FALSE, col = 'slateblue1')
-box(bty = 'l')
-axis(1, at = bbar, labels = c('Shredders\n', 'Collector-\nfilterers', 'Collector-\ngatherers', 'Scrapers/\nGrazers', 'Generalists\n', 'Predators\n'), padj = 0.5)
-axis(2, -1:1, las = 2)
-mtext(side = 2, expression(paste('Density differences')), line = 4)
-mtext(side = 1, 'Functional Feeding Groups', line = 3.5)
-legend('topleft', legend = '', bty = 'n')
+## Plot panel graph of Whiting's and our data
+plotpred <- function(){
+	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
+	for(i in 1:2){
+		mydat <- if(i == 1){fitsw} else{fitsg}
+		plot(c(1, 6), c(min(mydat$CILower), max(mydat$CIUpper)), xlab = '', ylab = '', axes = FALSE, 
+			type = 'n')
+		if(i == 1){axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+		} else{axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = c('Shredder', 'Scraper/\nGrazer', 
+			'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
+		}
+		axis(2, las = 2)
+		mtext(side = 2, bquote('Invertebrate density ('~m^-2*')'), line = 3.5)
+		box(bty = 'l')
+		points(mydat$Density, pch = 16, cex = 1.5)
+		with(mydat, arrows(x0 = 1:6, y0 = CILower, y1 = CIUpper, code = 3, angle = 90, length = 0.05))
+		myleg <- ifelse(i == 1, '2011', '2016')
+		legend('topright', legend = myleg, bty = 'n')
+	}
+}
+plotTypes(plotpred, 'ModelDensities', 'Figures')
 
-
-###ANOVA test
-aov(abundance~ffg)
-#error code. Begin here next time. 
- 
-
+## Plot graph of modeled absolute and % difference
+plotpreddiff <- function(){
+	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
+	plot(c(1, 6), c(min(fitsg$Density - fitsw$Density), max(fitsg$Density - fitsw$Density)), 
+		xlab = '', ylab = '', axes = FALSE, type = 'n')
+		axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+		axis(2, las = 2)
+		box(bty = 'l')
+		mtext(side = 2, bquote('Difference in density ('~m^-2*')'), line = 3.5)
+		abline(h = 0, lty = 2)
+		points(1:6, fitsg$Density - fitsw$Density, pch = 16, cex = 1.5)
+	plot(c(1, 6), c(-1, .25), xlab = '', ylab = '', axes = FALSE, type = 'n')
+	axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = c('Shredder', 'Scraper/\nGrazer', 
+		'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
+	axis(2, las = 2, at = seq(-1, 1, 0.25), labels = paste0(seq(-1, 1, 0.25) * 100, '%'))
+	box(bty = 'l')
+	mtext(side = 2, 'Relative difference', line = 3.7)
+	abline(h = 0, lty = 2)
+	points(1:6, fitperc, pch = 16, cex = 1.5)
+}
+plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
