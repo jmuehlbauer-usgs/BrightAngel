@@ -1,5 +1,5 @@
 ##### Bright Angel trophic cascade analysis #####
-## Last updated 5 July 2019 by J.D. Muehlbauer
+## Last updated 8 July 2019 by J.D. Muehlbauer
 
 
 ##### Set up workspace ##### 
@@ -200,15 +200,21 @@ dat4 <- lapply(dat4, function(x) x[order(x[, 'BarcodeID'], x[, 'SpeciesID']),])
 	dat4 <- lapply(dat4, droplevels)
 
 ## Add consistent factor levels
-levspp <- unique(unlist(lapply(dat4, function(x) levels(x[, 'SpeciesID']))))
+levspp <- sort(unique(unlist(lapply(dat4, function(x) levels(x[, 'SpeciesID'])))))
 levFFG <- unique(unlist(lapply(dat4, function(x) levels(x[, 'FFG']))))
+	levFFG <- ifelse(length(levFFG) == 6, c('Shredder', 'ScraperGrazer', 'CollectorFilterer', 
+		'CollectorGatherer', 'Generalist', 'Predator'), levFFG)
 dat4 <- lapply(dat4, function(x){
 	levspp1 <- levspp[!(levspp %in% levels(x[, 'SpeciesID']))]
 	levFFG1 <- levFFG[!(levFFG %in% levels(x[, 'FFG']))]
 	levels(x[, 'SpeciesID']) <- c(levels(x[, 'SpeciesID']), levspp[!(levspp %in% levels(x[, 'SpeciesID']))])
 	levels(x[, 'FFG']) <- c(levels(x[, 'FFG']), levFFG[!(levFFG %in% levels(x[, 'FFG']))])
+	x[, 'SpeciesID'] <- factor(x[, 'SpeciesID'], levels = levspp)
+	x[, 'FFG'] <- factor(x[, 'FFG'], levels = c('Shredder', 'ScraperGrazer', 'CollectorFilterer',
+		'CollectorGatherer', 'Generalist', 'Predator'))
 	return(x)
 	})
+levels(dat4$Whiting$SpeciesID)
 
 
 ##### Group specimens by FFG #####
