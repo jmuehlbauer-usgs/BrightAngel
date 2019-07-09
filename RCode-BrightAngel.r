@@ -439,6 +439,23 @@ env1 <- ord1[unqrow, c('Study', 'Season')]
 envpts <- envfit(pts2D, env1)
 	## 24% for pre-post and 17% for season. Neither is great.
 
+## Plot groupings on ordination
+plotord <- function(){
+	par(mfrow = c(1, 1), mar = c(4, 4, 0.1, 0.1), cex = 1)
+	plot(c(-1.5, 1.5), c(-1.5, 1.5), type = 'n', xlab = 'Axis 1', ylab = 'Axis 2', axes = FALSE)
+	axis(1)
+	axis(2, las = 2)
+	box(bty = 'l')
+	points(pts2D, col = as.numeric(env1$Study) + 1, pch = as.numeric(env1$Season) + 14)
+	#ordihull(pts2D, env1$Study, draw = 'polygon', col = c(2, 3))
+	ordiellipse(pts2D, env1$Study, kind = 'sd', conf = 0.95, col = c(2, 3))
+	text(spp2D, rownames(spp2D), col = 4, cex = 0.6)
+	legend('topright', legend = c('2011', '2016', levels(env1$Season), '95% CI'), col = c(2, 3, rep(1, 5)), 
+		pch = c(rep(15, 2), 15:18, 1), pt.cex = c(1.5, 1.5, rep(1, 4), 1.5), bty = 'n')
+}
+plotTypes(plotord, 'Ordination', 'Figures', height = 6.5)
+	## Not much there.
+
 ## See how taxa load on the ordination
 envspp <- envfit(pts2D, ord4)
 envspp1 <- data.frame(round(cbind(envspp$vectors[[1]], envspp$vectors[[2]], envspp$vectors[[4]]), 4))
@@ -447,16 +464,7 @@ envspp1 <- data.frame(round(cbind(envspp$vectors[[1]], envspp$vectors[[2]], envs
 
 ## Limit to only taxa with R2 >= 25%
 envspp2 <- envspp1[envspp1$R2 >= 0.25,]
-
-## Plot groupings on ordination
-plotord <- function(){
-	par(mfrow = c(1, 1), mar = c(4, 4, 0.1, 0.1), cex = 1)
-	plot(pts2D, type = 'n', xlab = 'Axis 1', ylab = 'Axis 2', axes = FALSE)
-	axis(1)
-	axis(2, las = 2)
-	box(bty = 'l')
-	points(pts2D, col = as.numeric(env1$Study) + 1, pch = as.numeric(env1$Season) + 14)
-	legend('topright', legend = c('2011', '2016', levels(env1$Season)), col = c(2, 3, rep(1, 4)), 
-		pch = c(rep(15, 2), 15:18), pt.cex = c(1.5, 1.5, rep(1, 4)), bty = 'n')
-}
-plotTypes(plotord, 'Ordination', 'Figures', height = 6.5)
+	envspp2$FFG <- spp[match(rownames(envspp2), spp$SpeciesID), 'FFG']
+	## TABL, HYDE, CHIL, PETL, CHIM, and PLAN are most strongly loading on the ordination.
+	## No real theme to these in terms of FFG, although most maybe except HYDE),
+		## are loading in the direction of Whiting's samples.
