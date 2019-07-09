@@ -293,47 +293,64 @@ plotTypes(plotdiff, 'ObservedDifferences', 'Figures')
 ffg1 <- rbind(ffg$Whiting, ffg$Benthic)
 	ffg1$Study <- factor(ifelse(year(ffg1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
-## Find best data distribution (family) to use
-lm1 <- glm(Count ~ 1 + offset(Unit), data = ffg1)
-nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = ffg1)
-po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = ffg1)
-	AIC(lm1, nb1, po1)
-	## Negative binomial clearly the best choice
-
-## Add a random effect for sample or season
-nb2 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
-nb3 <- glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
-	AIC(nb1, nb2, nb3)
-	## Season helps. Barcode doesn't.
-
-## Add pre-post and FFG fixed effects
-nb4 <- glmmTMB(Count ~ FFG + (1 | Season) + offset(log(Unit)), family = 'nbinom2', data = ffg1)
-nb5 <- glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
-	family = 'nbinom2', data = ffg1)
-nb6 <- glmmTMB(Count ~ FFG + Study + (1 | Season) + offset(log(Unit)), 
-	family = 'nbinom2', data = ffg1)
-nb7 <- glmmTMB(Count ~ FFG * Study + (1 | Season) + offset(log(Unit)), 
-	family = 'nbinom2', data = ffg1)
-	AIC(nb1, nb3, nb4, nb5, nb6, nb7)
+## Build some models
+ffgmod <- list()
+for(i in 1 : length(levels(ffg1$FFG))){
+	mydat <- ffg1[ffg1$FFG == levels(ffg1$FFG)[i],]
+	ffgmod[[i]] <- list()
+	## Find best data distribution (family) to use
+	ffgmod[[i]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = mydat)
+	ffgmod[[i]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = mydat)
+	ffgmod[[i]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = mydat)
+	## Add a random effect for sample or season
+	ffgmod[[i]]$nb2 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)
+	ffgmod[[i]]$nb3 <- glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)
+	ffgmod[[i]]$nb4 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)
+	## Add pre-post and FFG fixed effects
+	ffgmod[[i]]$nb5 <- glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)
+	ffgmod[[i]]$nb6 <- glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)
+	ffgmod[[i]]$nb7 <- glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat)	
+}
+	names(ffgmod) <- levels(ffg1$FFG)
+	
+## Compare models using AIC
+ffgmodAIC <- sapply(ffgmod, function(x) sapply(x, AIC))
+	## Negative binomial distribution always the best bet (over linear/Gaussian and Poisson).
+	## The choice of random effect or whether to include one is less clear.
+		## However, BarcodeID doesn't always fit, and a random effect for season is sensible. Use that.
+	## Including a pre-post term improves all models except for Collector-Filterers and -Gatherers.
+		## Critical to the analysis though, so use it anyway.
 
 ## Get parameters to predict
-flen <- length(levels(ffg1$FFG))
 tlen <- length(levels(ffg1$Study))
 elen <- length(levels(ffg1$Season))
-predparm <- data.frame(FFG = rep(levels(ffg1$FFG), tlen * elen),
-	Study = rep(levels(ffg1$Study), rep(flen * elen, tlen)),
-	Season = rep(rep(levels(ffg1$Season), rep(flen, elen)), tlen), Unit = 1)
-
-predparm <- data.frame(FFG = rep(levels(ffg1$FFG), tlen),
-	Study = rep(levels(ffg1$Study), rep(flen, tlen)), Unit = 1, Season = 'Generic')
+predparm <- data.frame(Study = levels(ffg1$Study), Season = 'Generic', Unit = 1)
 	
 ## Get model-predicted values and confidence intervals
-preds <- predict(nb7, predparm, type = 'link', se.fit = TRUE, allow.new.levels = TRUE)
-predupr <- round(exp(preds$fit + (qnorm(0.975) * preds$se.fit)))
-predlwr <- round(exp(preds$fit - (qnorm(0.975) * preds$se.fit)))
-fits2 <- data.frame(predparm, Density = round(exp(preds$fit)), CILower = predlwr, CIUpper = predupr)
-fitsw <- fits2[1 : (dim(fits2)[1] / 2), ]
-fitsg <- fits2[(1 + (dim(fits2)[1] / 2)) : dim(fits2)[1], ]
+preds <- lapply(ffgmod, function(x){
+	predict(x[['nb6']], predparm, type = 'link', se.fit = TRUE, allow.new.levels = TRUE)
+	})
+fits1 <- data.frame(FFG = rep(levels(ffg1$FFG), tlen), 
+	Study = rep(levels(ffg1$Study), rep(flen, tlen)), Unit = 1)
+	fits1$LinkFit <- c(t(sapply(preds, function(x) x[['fit']])))
+	fits1$LinkSE <- c(t(sapply(preds, function(x) x[['se.fit']])))
+fits1$Density <- round(exp(fits1$LinkFit))
+fits1$CILower <- round(exp(fits1$LinkFit - (qnorm(0.975) * fits1$LinkSE)))
+fits1$CIUpper <- round(exp(fits1$LinkFit + (qnorm(0.975) * fits1$LinkSE)))
+fitsw <- fits1[1 : (dim(fits1)[1] / 2), ]
+fitsg <- fits1[(1 + (dim(fits1)[1] / 2)) : dim(fits1)[1], ]
+
+## Get model-predicted differences pre-post
+diff1 <- data.frame(FFG = levels(ffg1$FFG)) 
+	diff1$LinkDiff = unlist(lapply(ffgmod, function(x) fixef(x[['nb6']])$cond[2]))
+	diff1$DensityDiff = round(exp(diff1$LinkDiff))
+	## The above three lines are in-progress. 
 fitdiff <- fitsg$Density - fitsw$Density
 	names(fitdiff) <- fitsw$FFG
 fitperc <- round(fitdiff / fitsw$Density, 4)
@@ -468,3 +485,10 @@ envspp2 <- envspp1[envspp1$R2 >= 0.25,]
 	## TABL, HYDE, CHIL, PETL, CHIM, and PLAN are most strongly loading on the ordination.
 	## No real theme to these in terms of FFG, although most maybe except HYDE),
 		## are loading in the direction of Whiting's samples.
+		
+### NEXT STEPS: 
+	## Consider converting Whiting's Biomass to useable format and backcalculating to lengths to pair with our size data.
+	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
+	## Other patterns shown in the model analysis are largely consistent with a trophic cascade where trout removal increases dace, which decrease inverts.
+	## Looking at change in Biomass as a surrogate for secondary production/standind stock could also be useful.
+	## Figure out how to get confidence intervals on density differences and relative differences (probably a Jeff task).
