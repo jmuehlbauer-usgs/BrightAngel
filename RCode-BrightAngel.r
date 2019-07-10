@@ -317,6 +317,7 @@ for(i in 1 : length(levels(ffg1$FFG))){
 	ffgmod[[i]]$nb7 <- glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
 		family = 'nbinom2', data = mydat)	
 }
+	## Note: warnings here are just due to FFGs with NAs that therefore don't fit. Can be ignored.
 	names(ffgmod) <- levels(ffg1$FFG)
 	
 ## Compare models using AIC
@@ -490,5 +491,5 @@ envspp2 <- envspp1[envspp1$R2 >= 0.25,]
 	## Consider converting Whiting's Biomass to useable format and backcalculating to lengths to pair with our size data.
 	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
 	## Other patterns shown in the model analysis are largely consistent with a trophic cascade where trout removal increases dace, which decrease inverts.
-	## Looking at change in Biomass as a surrogate for secondary production/standind stock could also be useful.
+	## Looking at change in Biomass as a surrogate for secondary production/standing stock could also be useful.
 	## Figure out how to get confidence intervals on density differences and relative differences (probably a Jeff task).

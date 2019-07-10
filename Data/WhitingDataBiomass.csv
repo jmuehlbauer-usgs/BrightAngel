@@ -1,0 +1,1033 @@
+SampleID,Date,SpeciesID,Density
+Hess 1,2010-11-06,MCYA,6.013429604
+Hess 2,2010-11-06,MCYA,3.54900411
+Hess 3,2010-11-06,MCYA,0.949488885
+Hess 4,2010-11-06,MCYA,1.333530045
+Hess 5,2010-11-06,MCYA,1.89897777
+Hess 6,2010-11-06,MCYA,1.966522635
+Hess 1,2011-01-21,MCYA,0.63299259
+Hess 2,2011-01-21,MCYA,4.430948129
+Hess 3,2011-01-21,MCYA,0.316496295
+Hess 4,2011-01-21,MCYA,2.53197036
+Hess 5,2011-01-21,MCYA,4.747444424
+Hess 6,2011-01-21,MCYA,2.848466655
+Hess 1,2011-06-09,MCYA,11.71036291
+Hess 2,2011-06-09,MCYA,4.114451834
+Hess 3,2011-06-09,MCYA,21.20525176
+Hess 4,2011-06-09,MCYA,6.329925899
+Hess 5,2011-06-09,MCYA,6.329925899
+Hess 6,2011-06-09,MCYA,8.861896259
+Hess 1,2011-09-04,MCYA,144.1494608
+Hess 2,2011-09-04,MCYA,242.8815305
+Hess 3,2011-09-04,MCYA,94.6393371
+Hess 4,2011-09-04,MCYA,214.1603591
+Hess 5,2011-09-04,MCYA,22.51048712
+Hess 6,2011-09-04,MCYA,63.33976155
+Hess 1,2010-11-06,MCYL,184.256959
+Hess 2,2010-11-06,MCYL,216.8733476
+Hess 3,2010-11-06,MCYL,90.3149074
+Hess 4,2010-11-06,MCYL,233.2366813
+Hess 5,2010-11-06,MCYL,54.79518782
+Hess 6,2010-11-06,MCYL,143.8854353
+Hess 1,2011-01-21,MCYL,242.5885866
+Hess 2,2011-01-21,MCYL,211.1632385
+Hess 3,2011-01-21,MCYL,109.614783
+Hess 4,2011-01-21,MCYL,107.2680071
+Hess 5,2011-01-21,MCYL,54.34724486
+Hess 6,2011-01-21,MCYL,259.0881217
+Hess 1,2011-06-09,MCYL,17.86852667
+Hess 2,2011-06-09,MCYL,4.751786174
+Hess 3,2011-06-09,MCYL,26.5371878
+Hess 4,2011-06-09,MCYL,11.17771481
+Hess 5,2011-06-09,MCYL,8.571720589
+Hess 6,2011-06-09,MCYL,18.70847691
+Hess 1,2011-09-04,MCYL,144.1494608
+Hess 2,2011-09-04,MCYL,242.8815305
+Hess 3,2011-09-04,MCYL,94.6393371
+Hess 4,2011-09-04,MCYL,214.1603591
+Hess 5,2011-09-04,MCYL,22.51048712
+Hess 6,2011-09-04,MCYL,63.33976155
+Hess 1,2010-11-06,CERL,0
+Hess 2,2010-11-06,CERL,0
+Hess 3,2010-11-06,CERL,0
+Hess 4,2010-11-06,CERL,0
+Hess 5,2010-11-06,CERL,0
+Hess 6,2010-11-06,CERL,0
+Hess 1,2011-01-21,CERL,0
+Hess 2,2011-01-21,CERL,0
+Hess 3,2011-01-21,CERL,0
+Hess 4,2011-01-21,CERL,0
+Hess 5,2011-01-21,CERL,0
+Hess 6,2011-01-21,CERL,0
+Hess 1,2011-06-09,CERL,0
+Hess 2,2011-06-09,CERL,0
+Hess 3,2011-06-09,CERL,0
+Hess 4,2011-06-09,CERL,0
+Hess 5,2011-06-09,CERL,0
+Hess 6,2011-06-09,CERL,0
+Hess 1,2011-09-04,CERL,0
+Hess 2,2011-09-04,CERL,0
+Hess 3,2011-09-04,CERL,0
+Hess 4,2011-09-04,CERL,1.212458825
+Hess 5,2011-09-04,CERL,0
+Hess 6,2011-09-04,CERL,1.774020453
+Hess 1,2010-11-06,CHIA,7.797872238
+Hess 2,2010-11-06,CHIA,6.68393856
+Hess 3,2010-11-06,CHIA,0
+Hess 4,2010-11-06,CHIA,0
+Hess 5,2010-11-06,CHIA,2.227867357
+Hess 6,2010-11-06,CHIA,0
+Hess 1,2011-01-21,CHIA,0
+Hess 2,2011-01-21,CHIA,0
+Hess 3,2011-01-21,CHIA,0
+Hess 4,2011-01-21,CHIA,2.227867357
+Hess 5,2011-01-21,CHIA,0
+Hess 6,2011-01-21,CHIA,0
+Hess 1,2011-06-09,CHIA,0
+Hess 2,2011-06-09,CHIA,2.785002441
+Hess 3,2011-06-09,CHIA,0
+Hess 4,2011-06-09,CHIA,0
+Hess 5,2011-06-09,CHIA,0
+Hess 6,2011-06-09,CHIA,0
+Hess 1,2011-09-04,CHIA,3.898936119
+Hess 2,2011-09-04,CHIA,2.785002441
+Hess 3,2011-09-04,CHIA,0
+Hess 4,2011-09-04,CHIA,0
+Hess 5,2011-09-04,CHIA,0
+Hess 6,2011-09-04,CHIA,0
+Hess 1,2010-11-06,CHIP,2.290336336
+Hess 2,2010-11-06,CHIP,1.484090444
+Hess 3,2010-11-06,CHIP,3.1678736
+Hess 4,2010-11-06,CHIP,2.979564531
+Hess 5,2010-11-06,CHIP,2.634170886
+Hess 6,2010-11-06,CHIP,1.120158536
+Hess 1,2011-01-21,CHIP,26.14098978
+Hess 2,2011-01-21,CHIP,23.24103625
+Hess 3,2011-01-21,CHIP,3.62159776
+Hess 4,2011-01-21,CHIP,19.24688904
+Hess 5,2011-01-21,CHIP,2.063455564
+Hess 6,2011-01-21,CHIP,3.443177158
+Hess 1,2011-06-09,CHIP,4.847299898
+Hess 2,2011-06-09,CHIP,4.848858992
+Hess 3,2011-06-09,CHIP,3.557370556
+Hess 4,2011-06-09,CHIP,1.989622653
+Hess 5,2011-06-09,CHIP,1.262741281
+Hess 6,2011-06-09,CHIP,3.413228717
+Hess 1,2011-09-04,CHIP,2.631373123
+Hess 2,2011-09-04,CHIP,2.127656233
+Hess 3,2011-09-04,CHIP,1.506921647
+Hess 4,2011-09-04,CHIP,5.35540018
+Hess 5,2011-09-04,CHIP,0.829077095
+Hess 6,2011-09-04,CHIP,1.692432953
+Hess 1,2010-11-06,CHIL,41.08880979
+Hess 2,2010-11-06,CHIL,45.17799373
+Hess 3,2010-11-06,CHIL,41.97951308
+Hess 4,2010-11-06,CHIL,33.74896731
+Hess 5,2010-11-06,CHIL,30.25772067
+Hess 6,2010-11-06,CHIL,27.00377032
+Hess 1,2011-01-21,CHIL,408.7732005
+Hess 2,2011-01-21,CHIL,370.7947068
+Hess 3,2011-01-21,CHIL,128.2710103
+Hess 4,2011-01-21,CHIL,334.3748828
+Hess 5,2011-01-21,CHIL,45.99831125
+Hess 6,2011-01-21,CHIL,63.4241361
+Hess 1,2011-06-09,CHIL,18.74445978
+Hess 2,2011-06-09,CHIL,14.87525198
+Hess 3,2011-06-09,CHIL,15.47871461
+Hess 4,2011-06-09,CHIL,16.6590799
+Hess 5,2011-06-09,CHIL,5.079460607
+Hess 6,2011-06-09,CHIL,16.62732069
+Hess 1,2011-09-04,CHIL,43.23037063
+Hess 2,2011-09-04,CHIL,67.77019401
+Hess 3,2011-09-04,CHIL,32.09942906
+Hess 4,2011-09-04,CHIL,89.86575551
+Hess 5,2011-09-04,CHIL,12.60069353
+Hess 6,2011-09-04,CHIL,16.34294681
+Hess 1,2010-11-06,Euparyphus (Larve),0
+Hess 2,2010-11-06,Euparyphus (Larve),0
+Hess 3,2010-11-06,Euparyphus (Larve),0
+Hess 4,2010-11-06,Euparyphus (Larve),0.886739213
+Hess 5,2010-11-06,Euparyphus (Larve),0
+Hess 6,2010-11-06,Euparyphus (Larve),0
+Hess 1,2011-01-21,Euparyphus (Larve),1.106722689
+Hess 2,2011-01-21,Euparyphus (Larve),0
+Hess 3,2011-01-21,Euparyphus (Larve),0
+Hess 4,2011-01-21,Euparyphus (Larve),0
+Hess 5,2011-01-21,Euparyphus (Larve),0
+Hess 6,2011-01-21,Euparyphus (Larve),1.713678478
+Hess 1,2011-06-09,Euparyphus (Larve),0.60695579
+Hess 2,2011-06-09,Euparyphus (Larve),0
+Hess 3,2011-06-09,Euparyphus (Larve),0
+Hess 4,2011-06-09,Euparyphus (Larve),0
+Hess 5,2011-06-09,Euparyphus (Larve),0
+Hess 6,2011-06-09,Euparyphus (Larve),0
+Hess 1,2011-09-04,Euparyphus (Larve),0
+Hess 2,2011-09-04,Euparyphus (Larve),0
+Hess 3,2011-09-04,Euparyphus (Larve),0
+Hess 4,2011-09-04,Euparyphus (Larve),0
+Hess 5,2011-09-04,Euparyphus (Larve),0
+Hess 6,2011-09-04,Euparyphus (Larve),0
+Hess 1,2010-11-06,Hemerodromia (Larvae),0
+Hess 2,2010-11-06,Hemerodromia (Larvae),0
+Hess 3,2010-11-06,Hemerodromia (Larvae),0
+Hess 4,2010-11-06,Hemerodromia (Larvae),0.514773317
+Hess 5,2010-11-06,Hemerodromia (Larvae),1.889917924
+Hess 6,2010-11-06,Hemerodromia (Larvae),0
+Hess 1,2011-01-21,Hemerodromia (Larvae),0.183352857
+Hess 2,2011-01-21,Hemerodromia (Larvae),7.552641651
+Hess 3,2011-01-21,Hemerodromia (Larvae),8.60998995
+Hess 4,2011-01-21,Hemerodromia (Larvae),10.46851253
+Hess 5,2011-01-21,Hemerodromia (Larvae),4.850640011
+Hess 6,2011-01-21,Hemerodromia (Larvae),10.72379661
+Hess 1,2011-06-09,Hemerodromia (Larvae),4.451280093
+Hess 2,2011-06-09,Hemerodromia (Larvae),0
+Hess 3,2011-06-09,Hemerodromia (Larvae),0
+Hess 4,2011-06-09,Hemerodromia (Larvae),8.902560187
+Hess 5,2011-06-09,Hemerodromia (Larvae),0
+Hess 6,2011-06-09,Hemerodromia (Larvae),2.960722087
+Hess 1,2011-09-04,Hemerodromia (Larvae),2.656381643
+Hess 2,2011-09-04,Hemerodromia (Larvae),10.6967166
+Hess 3,2011-09-04,Hemerodromia (Larvae),4.077146247
+Hess 4,2011-09-04,Hemerodromia (Larvae),14.40536242
+Hess 5,2011-09-04,Hemerodromia (Larvae),0.514773317
+Hess 6,2011-09-04,Hemerodromia (Larvae),7.41200218
+Hess 1,2010-11-06,Maruina (Larvae),2.35470231
+Hess 2,2010-11-06,Maruina (Larvae),31.06904126
+Hess 3,2010-11-06,Maruina (Larvae),10.03320421
+Hess 4,2010-11-06,Maruina (Larvae),0.903470581
+Hess 5,2010-11-06,Maruina (Larvae),0.845331046
+Hess 6,2010-11-06,Maruina (Larvae),26.05110262
+Hess 1,2011-01-21,Maruina (Larvae),1.416500699
+Hess 2,2011-01-21,Maruina (Larvae),1.424522106
+Hess 3,2011-01-21,Maruina (Larvae),1.233575025
+Hess 4,2011-01-21,Maruina (Larvae),0.809544909
+Hess 5,2011-01-21,Maruina (Larvae),1.250103501
+Hess 6,2011-01-21,Maruina (Larvae),2.132322829
+Hess 1,2011-06-09,Maruina (Larvae),1.027201613
+Hess 2,2011-06-09,Maruina (Larvae),0.093925672
+Hess 3,2011-06-09,Maruina (Larvae),0.467634767
+Hess 4,2011-06-09,Maruina (Larvae),0.014534884
+Hess 5,2011-06-09,Maruina (Larvae),0.74741819
+Hess 6,2011-06-09,Maruina (Larvae),0.467634767
+Hess 1,2011-09-04,Maruina (Larvae),2.154309675
+Hess 2,2011-09-04,Maruina (Larvae),5.429011042
+Hess 3,2011-09-04,Maruina (Larvae),7.40816652
+Hess 4,2011-09-04,Maruina (Larvae),5.844487051
+Hess 5,2011-09-04,Maruina (Larvae),13.11223821
+Hess 6,2011-09-04,Maruina (Larvae),6.301418264
+Hess 1,2010-11-06,Simulium (Pupae),0
+Hess 2,2010-11-06,Simulium (Pupae),0
+Hess 3,2010-11-06,Simulium (Pupae),8.120649875
+Hess 4,2010-11-06,Simulium (Pupae),5.335647434
+Hess 5,2010-11-06,Simulium (Pupae),5.335647434
+Hess 6,2010-11-06,Simulium (Pupae),2.785002441
+Hess 1,2011-01-21,Simulium (Pupae),25.0762428
+Hess 2,2011-01-21,Simulium (Pupae),0
+Hess 3,2011-01-21,Simulium (Pupae),0
+Hess 4,2011-01-21,Simulium (Pupae),5.335647434
+Hess 5,2011-01-21,Simulium (Pupae),2.785002441
+Hess 6,2011-01-21,Simulium (Pupae),11.61994549
+Hess 1,2011-06-09,Simulium (Pupae),5.570004881
+Hess 2,2011-06-09,Simulium (Pupae),0
+Hess 3,2011-06-09,Simulium (Pupae),8.834943047
+Hess 4,2011-06-09,Simulium (Pupae),2.785002441
+Hess 5,2011-06-09,Simulium (Pupae),19.49501708
+Hess 6,2011-06-09,Simulium (Pupae),0
+Hess 1,2011-09-04,Simulium (Pupae),0
+Hess 2,2011-09-04,Simulium (Pupae),2.785002441
+Hess 3,2011-09-04,Simulium (Pupae),0
+Hess 4,2011-09-04,Simulium (Pupae),2.785002441
+Hess 5,2011-09-04,Simulium (Pupae),0
+Hess 6,2011-09-04,Simulium (Pupae),0
+Hess 1,2010-11-06,Simulium (Larvae),2.235071079
+Hess 2,2010-11-06,Simulium (Larvae),34.96124853
+Hess 3,2010-11-06,Simulium (Larvae),81.67364009
+Hess 4,2010-11-06,Simulium (Larvae),21.12563583
+Hess 5,2010-11-06,Simulium (Larvae),11.04115264
+Hess 6,2010-11-06,Simulium (Larvae),23.91654539
+Hess 1,2011-01-21,Simulium (Larvae),8.096375622
+Hess 2,2011-01-21,Simulium (Larvae),36.78305745
+Hess 3,2011-01-21,Simulium (Larvae),36.70535459
+Hess 4,2011-01-21,Simulium (Larvae),10.56137919
+Hess 5,2011-01-21,Simulium (Larvae),39.68901096
+Hess 6,2011-01-21,Simulium (Larvae),386.4039618
+Hess 1,2011-06-09,Simulium (Larvae),7.340754338
+Hess 2,2011-06-09,Simulium (Larvae),0.755621284
+Hess 3,2011-06-09,Simulium (Larvae),79.05649289
+Hess 4,2011-06-09,Simulium (Larvae),7.388574222
+Hess 5,2011-06-09,Simulium (Larvae),149.4168729
+Hess 6,2011-06-09,Simulium (Larvae),75.00931589
+Hess 1,2011-09-04,Simulium (Larvae),0.953311652
+Hess 2,2011-09-04,Simulium (Larvae),17.25915731
+Hess 3,2011-09-04,Simulium (Larvae),1.588852754
+Hess 4,2011-09-04,Simulium (Larvae),0
+Hess 5,2011-09-04,Simulium (Larvae),4.032291424
+Hess 6,2011-09-04,Simulium (Larvae),14.83184369
+Hess 1,2010-11-06,Tabanus (Larvae),66.02277184
+Hess 2,2010-11-06,Tabanus (Larvae),143.1450125
+Hess 3,2010-11-06,Tabanus (Larvae),272.019039
+Hess 4,2010-11-06,Tabanus (Larvae),266.3215176
+Hess 5,2010-11-06,Tabanus (Larvae),45.39174021
+Hess 6,2010-11-06,Tabanus (Larvae),135.5529989
+Hess 1,2011-01-21,Tabanus (Larvae),598.9068939
+Hess 2,2011-01-21,Tabanus (Larvae),184.7719633
+Hess 3,2011-01-21,Tabanus (Larvae),161.559114
+Hess 4,2011-01-21,Tabanus (Larvae),165.1166082
+Hess 5,2011-01-21,Tabanus (Larvae),27.82536656
+Hess 6,2011-01-21,Tabanus (Larvae),507.8520255
+Hess 1,2011-06-09,Tabanus (Larvae),97.58496968
+Hess 2,2011-06-09,Tabanus (Larvae),22.48631922
+Hess 3,2011-06-09,Tabanus (Larvae),208.2426629
+Hess 4,2011-06-09,Tabanus (Larvae),41.72807549
+Hess 5,2011-06-09,Tabanus (Larvae),6.574603264
+Hess 6,2011-06-09,Tabanus (Larvae),5.003937688
+Hess 1,2011-09-04,Tabanus (Larvae),108.0411568
+Hess 2,2011-09-04,Tabanus (Larvae),32.63834975
+Hess 3,2011-09-04,Tabanus (Larvae),56.37719041
+Hess 4,2011-09-04,Tabanus (Larvae),234.6844992
+Hess 5,2011-09-04,Tabanus (Larvae),85.76849887
+Hess 6,2011-09-04,Tabanus (Larvae),46.52008668
+Hess 1,2010-11-06,Tipulidae (Larvae),0
+Hess 2,2010-11-06,Tipulidae (Larvae),0
+Hess 3,2010-11-06,Tipulidae (Larvae),0
+Hess 4,2010-11-06,Tipulidae (Larvae),0
+Hess 5,2010-11-06,Tipulidae (Larvae),0
+Hess 6,2010-11-06,Tipulidae (Larvae),0
+Hess 1,2011-01-21,Tipulidae (Larvae),0
+Hess 2,2011-01-21,Tipulidae (Larvae),0
+Hess 3,2011-01-21,Tipulidae (Larvae),0.320650288
+Hess 4,2011-01-21,Tipulidae (Larvae),13.18725705
+Hess 5,2011-01-21,Tipulidae (Larvae),0
+Hess 6,2011-01-21,Tipulidae (Larvae),0
+Hess 1,2011-06-09,Tipulidae (Larvae),0
+Hess 2,2011-06-09,Tipulidae (Larvae),13.18725705
+Hess 3,2011-06-09,Tipulidae (Larvae),9.34979927
+Hess 4,2011-06-09,Tipulidae (Larvae),0
+Hess 5,2011-06-09,Tipulidae (Larvae),8.088529076
+Hess 6,2011-06-09,Tipulidae (Larvae),0
+Hess 1,2011-09-04,Tipulidae (Larvae),0
+Hess 2,2011-09-04,Tipulidae (Larvae),0
+Hess 3,2011-09-04,Tipulidae (Larvae),0
+Hess 4,2011-09-04,Tipulidae (Larvae),0
+Hess 5,2011-09-04,Tipulidae (Larvae),0
+Hess 6,2011-09-04,Tipulidae (Larvae),0
+Hess 1,2010-11-06,Acentrella (Niad),3.842886711
+Hess 2,2010-11-06,Acentrella (Niad),159.3898498
+Hess 3,2010-11-06,Acentrella (Niad),6.758337396
+Hess 4,2010-11-06,Acentrella (Niad),2.034469435
+Hess 5,2010-11-06,Acentrella (Niad),170.2363638
+Hess 6,2010-11-06,Acentrella (Niad),9.004296706
+Hess 1,2011-01-21,Acentrella (Niad),4.163070114
+Hess 2,2011-01-21,Acentrella (Niad),178.3849157
+Hess 3,2011-01-21,Acentrella (Niad),27.16336293
+Hess 4,2011-01-21,Acentrella (Niad),18.74309146
+Hess 5,2011-01-21,Acentrella (Niad),64.00281417
+Hess 6,2011-01-21,Acentrella (Niad),205.9536104
+Hess 1,2011-06-09,Acentrella (Niad),3.287756692
+Hess 2,2011-06-09,Acentrella (Niad),1.4504442
+Hess 3,2011-06-09,Acentrella (Niad),6.414697251
+Hess 4,2011-06-09,Acentrella (Niad),0
+Hess 5,2011-06-09,Acentrella (Niad),2.1756663
+Hess 6,2011-06-09,Acentrella (Niad),3.805097038
+Hess 1,2011-09-04,Acentrella (Niad),12.54555191
+Hess 2,2011-09-04,Acentrella (Niad),48.66835777
+Hess 3,2011-09-04,Acentrella (Niad),45.7367438
+Hess 4,2011-09-04,Acentrella (Niad),11.41529111
+Hess 5,2011-09-04,Acentrella (Niad),12.40435505
+Hess 6,2011-09-04,Acentrella (Niad),49.0537772
+Hess 1,2010-11-06,Baetis (Adult),0
+Hess 2,2010-11-06,Baetis (Adult),0
+Hess 3,2010-11-06,Baetis (Adult),0
+Hess 4,2010-11-06,Baetis (Adult),0
+Hess 5,2010-11-06,Baetis (Adult),0
+Hess 6,2010-11-06,Baetis (Adult),0
+Hess 1,2011-01-21,Baetis (Adult),0
+Hess 2,2011-01-21,Baetis (Adult),0
+Hess 3,2011-01-21,Baetis (Adult),0
+Hess 4,2011-01-21,Baetis (Adult),0
+Hess 5,2011-01-21,Baetis (Adult),0
+Hess 6,2011-01-21,Baetis (Adult),0
+Hess 1,2011-06-09,Baetis (Adult),0
+Hess 2,2011-06-09,Baetis (Adult),0
+Hess 3,2011-06-09,Baetis (Adult),3.149823256
+Hess 4,2011-06-09,Baetis (Adult),0
+Hess 5,2011-06-09,Baetis (Adult),0
+Hess 6,2011-06-09,Baetis (Adult),0
+Hess 1,2011-09-04,Baetis (Adult),0
+Hess 2,2011-09-04,Baetis (Adult),0
+Hess 3,2011-09-04,Baetis (Adult),0
+Hess 4,2011-09-04,Baetis (Adult),0
+Hess 5,2011-09-04,Baetis (Adult),0
+Hess 6,2011-09-04,Baetis (Adult),0
+Hess 1,2010-11-06,Baetis (Niad),60.5969735
+Hess 2,2010-11-06,Baetis (Niad),102.5409335
+Hess 3,2010-11-06,Baetis (Niad),90.23661879
+Hess 4,2010-11-06,Baetis (Niad),26.10426864
+Hess 5,2010-11-06,Baetis (Niad),113.6051175
+Hess 6,2010-11-06,Baetis (Niad),112.3452812
+Hess 1,2011-01-21,Baetis (Niad),265.6478633
+Hess 2,2011-01-21,Baetis (Niad),405.7612964
+Hess 3,2011-01-21,Baetis (Niad),176.6299878
+Hess 4,2011-01-21,Baetis (Niad),313.5077849
+Hess 5,2011-01-21,Baetis (Niad),209.3494818
+Hess 6,2011-01-21,Baetis (Niad),542.3700477
+Hess 1,2011-06-09,Baetis (Niad),1126.094089
+Hess 2,2011-06-09,Baetis (Niad),238.687912
+Hess 3,2011-06-09,Baetis (Niad),542.3913436
+Hess 4,2011-06-09,Baetis (Niad),322.8507392
+Hess 5,2011-06-09,Baetis (Niad),257.9608398
+Hess 6,2011-06-09,Baetis (Niad),762.3654434
+Hess 1,2011-09-04,Baetis (Niad),144.5887912
+Hess 2,2011-09-04,Baetis (Niad),221.9592377
+Hess 3,2011-09-04,Baetis (Niad),141.8879575
+Hess 4,2011-09-04,Baetis (Niad),301.8198973
+Hess 5,2011-09-04,Baetis (Niad),93.54443513
+Hess 6,2011-09-04,Baetis (Niad),150.6409416
+Hess 1,2010-11-06,Paraleptophlebia (Niad),4.150791659
+Hess 2,2010-11-06,Paraleptophlebia (Niad),4.33164424
+Hess 3,2010-11-06,Paraleptophlebia (Niad),2.176699166
+Hess 4,2010-11-06,Paraleptophlebia (Niad),10.58759967
+Hess 5,2010-11-06,Paraleptophlebia (Niad),1.22092154
+Hess 6,2010-11-06,Paraleptophlebia (Niad),4.061049987
+Hess 1,2011-01-21,Paraleptophlebia (Niad),6.416787329
+Hess 2,2011-01-21,Paraleptophlebia (Niad),5.458264108
+Hess 3,2011-01-21,Paraleptophlebia (Niad),0.522537065
+Hess 4,2011-01-21,Paraleptophlebia (Niad),11.74216633
+Hess 5,2011-01-21,Paraleptophlebia (Niad),0.522537065
+Hess 6,2011-01-21,Paraleptophlebia (Niad),2.441843081
+Hess 1,2011-06-09,Paraleptophlebia (Niad),0
+Hess 2,2011-06-09,Paraleptophlebia (Niad),0
+Hess 3,2011-06-09,Paraleptophlebia (Niad),0
+Hess 4,2011-06-09,Paraleptophlebia (Niad),0
+Hess 5,2011-06-09,Paraleptophlebia (Niad),0
+Hess 6,2011-06-09,Paraleptophlebia (Niad),0
+Hess 1,2011-09-04,Paraleptophlebia (Niad),2.263250075
+Hess 2,2011-09-04,Paraleptophlebia (Niad),24.47702017
+Hess 3,2011-09-04,Paraleptophlebia (Niad),3.394875112
+Hess 4,2011-09-04,Paraleptophlebia (Niad),53.29172745
+Hess 5,2011-09-04,Paraleptophlebia (Niad),2.699236231
+Hess 6,2011-09-04,Paraleptophlebia (Niad),1.045074129
+Hess 1,2010-11-06,Petrophila (Larvae),363.7829098
+Hess 2,2010-11-06,Petrophila (Larvae),198.496044
+Hess 3,2010-11-06,Petrophila (Larvae),138.0680797
+Hess 4,2010-11-06,Petrophila (Larvae),672.6174698
+Hess 5,2010-11-06,Petrophila (Larvae),205.1194651
+Hess 6,2010-11-06,Petrophila (Larvae),205.586287
+Hess 1,2011-01-21,Petrophila (Larvae),184.601422
+Hess 2,2011-01-21,Petrophila (Larvae),419.9894585
+Hess 3,2011-01-21,Petrophila (Larvae),57.11486017
+Hess 4,2011-01-21,Petrophila (Larvae),426.393887
+Hess 5,2011-01-21,Petrophila (Larvae),107.257964
+Hess 6,2011-01-21,Petrophila (Larvae),145.8669627
+Hess 1,2011-06-09,Petrophila (Larvae),0
+Hess 2,2011-06-09,Petrophila (Larvae),0
+Hess 3,2011-06-09,Petrophila (Larvae),0
+Hess 4,2011-06-09,Petrophila (Larvae),5.610241724
+Hess 5,2011-06-09,Petrophila (Larvae),0
+Hess 6,2011-06-09,Petrophila (Larvae),0
+Hess 1,2011-09-04,Petrophila (Larvae),293.0140194
+Hess 2,2011-09-04,Petrophila (Larvae),331.5678155
+Hess 3,2011-09-04,Petrophila (Larvae),67.67203229
+Hess 4,2011-09-04,Petrophila (Larvae),162.715647
+Hess 5,2011-09-04,Petrophila (Larvae),0.473396796
+Hess 6,2011-09-04,Petrophila (Larvae),11.29500713
+Hess 1,2010-11-06,Corydalus (Larvae),0
+Hess 2,2010-11-06,Corydalus (Larvae),38.9754425
+Hess 3,2010-11-06,Corydalus (Larvae),0
+Hess 4,2010-11-06,Corydalus (Larvae),0
+Hess 5,2010-11-06,Corydalus (Larvae),1338.073192
+Hess 6,2010-11-06,Corydalus (Larvae),175.7589098
+Hess 1,2011-01-21,Corydalus (Larvae),0
+Hess 2,2011-01-21,Corydalus (Larvae),0
+Hess 3,2011-01-21,Corydalus (Larvae),0
+Hess 4,2011-01-21,Corydalus (Larvae),377.0879391
+Hess 5,2011-01-21,Corydalus (Larvae),1930.773524
+Hess 6,2011-01-21,Corydalus (Larvae),154.6869367
+Hess 1,2011-06-09,Corydalus (Larvae),0
+Hess 2,2011-06-09,Corydalus (Larvae),3.851536296
+Hess 3,2011-06-09,Corydalus (Larvae),868.5803597
+Hess 4,2011-06-09,Corydalus (Larvae),0
+Hess 5,2011-06-09,Corydalus (Larvae),1636.11603
+Hess 6,2011-06-09,Corydalus (Larvae),456.0742334
+Hess 1,2011-09-04,Corydalus (Larvae),1859.45007
+Hess 2,2011-09-04,Corydalus (Larvae),124.5512677
+Hess 3,2011-09-04,Corydalus (Larvae),223.33404
+Hess 4,2011-09-04,Corydalus (Larvae),544.792847
+Hess 5,2011-09-04,Corydalus (Larvae),16.05732794
+Hess 6,2011-09-04,Corydalus (Larvae),229.0969249
+Hess 1,2010-11-06,Argia (Niad),14.31395402
+Hess 2,2010-11-06,Argia (Niad),3.886557012
+Hess 3,2010-11-06,Argia (Niad),3.886557012
+Hess 4,2010-11-06,Argia (Niad),385.9694782
+Hess 5,2010-11-06,Argia (Niad),0.408733527
+Hess 6,2010-11-06,Argia (Niad),1.468679227
+Hess 1,2011-01-21,Argia (Niad),18.07347777
+Hess 2,2011-01-21,Argia (Niad),1.408571202
+Hess 3,2011-01-21,Argia (Niad),0
+Hess 4,2011-01-21,Argia (Niad),9.623657555
+Hess 5,2011-01-21,Argia (Niad),1.896468695
+Hess 6,2011-01-21,Argia (Niad),2.040727434
+Hess 1,2011-06-09,Argia (Niad),1.264312464
+Hess 2,2011-06-09,Argia (Niad),0
+Hess 3,2011-06-09,Argia (Niad),0
+Hess 4,2011-06-09,Argia (Niad),0
+Hess 5,2011-06-09,Argia (Niad),0
+Hess 6,2011-06-09,Argia (Niad),4.030815751
+Hess 1,2011-09-04,Argia (Niad),0.632156232
+Hess 2,2011-09-04,Argia (Niad),21.91620192
+Hess 3,2011-09-04,Argia (Niad),0.632156232
+Hess 4,2011-09-04,Argia (Niad),3.254400781
+Hess 5,2011-09-04,Argia (Niad),0
+Hess 6,2011-09-04,Argia (Niad),0.204366763
+Hess 1,2010-11-06,Hetearina (Niad),81.01758944
+Hess 2,2010-11-06,Hetearina (Niad),14.62401539
+Hess 3,2010-11-06,Hetearina (Niad),0
+Hess 4,2010-11-06,Hetearina (Niad),74.06575899
+Hess 5,2010-11-06,Hetearina (Niad),1.301038217
+Hess 6,2010-11-06,Hetearina (Niad),6.098895275
+Hess 1,2011-01-21,Hetearina (Niad),14.42086748
+Hess 2,2011-01-21,Hetearina (Niad),126.2304379
+Hess 3,2011-01-21,Hetearina (Niad),0
+Hess 4,2011-01-21,Hetearina (Niad),8.703908198
+Hess 5,2011-01-21,Hetearina (Niad),0
+Hess 6,2011-01-21,Hetearina (Niad),122.7345582
+Hess 1,2011-06-09,Hetearina (Niad),0
+Hess 2,2011-06-09,Hetearina (Niad),0
+Hess 3,2011-06-09,Hetearina (Niad),0
+Hess 4,2011-06-09,Hetearina (Niad),0
+Hess 5,2011-06-09,Hetearina (Niad),0
+Hess 6,2011-06-09,Hetearina (Niad),0
+Hess 1,2011-09-04,Hetearina (Niad),1.301038217
+Hess 2,2011-09-04,Hetearina (Niad),1.18232816
+Hess 3,2011-09-04,Hetearina (Niad),0
+Hess 4,2011-09-04,Hetearina (Niad),15.1314724
+Hess 5,2011-09-04,Hetearina (Niad),0
+Hess 6,2011-09-04,Hetearina (Niad),0
+Hess 1,2010-11-06,Libellulidae (Niad),0
+Hess 2,2010-11-06,Libellulidae (Niad),0
+Hess 3,2010-11-06,Libellulidae (Niad),0
+Hess 4,2010-11-06,Libellulidae (Niad),0
+Hess 5,2010-11-06,Libellulidae (Niad),0
+Hess 6,2010-11-06,Libellulidae (Niad),0
+Hess 1,2011-01-21,Libellulidae (Niad),0
+Hess 2,2011-01-21,Libellulidae (Niad),0
+Hess 3,2011-01-21,Libellulidae (Niad),0
+Hess 4,2011-01-21,Libellulidae (Niad),0
+Hess 5,2011-01-21,Libellulidae (Niad),1.934410966
+Hess 6,2011-01-21,Libellulidae (Niad),0
+Hess 1,2011-06-09,Libellulidae (Niad),0
+Hess 2,2011-06-09,Libellulidae (Niad),0
+Hess 3,2011-06-09,Libellulidae (Niad),0
+Hess 4,2011-06-09,Libellulidae (Niad),0
+Hess 5,2011-06-09,Libellulidae (Niad),0
+Hess 6,2011-06-09,Libellulidae (Niad),0
+Hess 1,2011-09-04,Libellulidae (Niad),0
+Hess 2,2011-09-04,Libellulidae (Niad),0
+Hess 3,2011-09-04,Libellulidae (Niad),0
+Hess 4,2011-09-04,Libellulidae (Niad),0
+Hess 5,2011-09-04,Libellulidae (Niad),0
+Hess 6,2011-09-04,Libellulidae (Niad),0
+Hess 1,2010-11-06,Capnia (Niad),0
+Hess 2,2010-11-06,Capnia (Niad),0
+Hess 3,2010-11-06,Capnia (Niad),0
+Hess 4,2010-11-06,Capnia (Niad),0
+Hess 5,2010-11-06,Capnia (Niad),0
+Hess 6,2010-11-06,Capnia (Niad),0
+Hess 1,2011-01-21,Capnia (Niad),15.19373552
+Hess 2,2011-01-21,Capnia (Niad),9.327166567
+Hess 3,2011-01-21,Capnia (Niad),5.160307502
+Hess 4,2011-01-21,Capnia (Niad),10.43354398
+Hess 5,2011-01-21,Capnia (Niad),0
+Hess 6,2011-01-21,Capnia (Niad),10.90893644
+Hess 1,2011-06-09,Capnia (Niad),0
+Hess 2,2011-06-09,Capnia (Niad),0
+Hess 3,2011-06-09,Capnia (Niad),0
+Hess 4,2011-06-09,Capnia (Niad),0
+Hess 5,2011-06-09,Capnia (Niad),0
+Hess 6,2011-06-09,Capnia (Niad),0
+Hess 1,2011-09-04,Capnia (Niad),0
+Hess 2,2011-09-04,Capnia (Niad),0
+Hess 3,2011-09-04,Capnia (Niad),0
+Hess 4,2011-09-04,Capnia (Niad),0
+Hess 5,2011-09-04,Capnia (Niad),0
+Hess 6,2011-09-04,Capnia (Niad),0
+Hess 1,2010-11-06,Sweltza (Niad),0
+Hess 2,2010-11-06,Sweltza (Niad),0
+Hess 3,2010-11-06,Sweltza (Niad),0.993448437
+Hess 4,2010-11-06,Sweltza (Niad),0.475392458
+Hess 5,2010-11-06,Sweltza (Niad),0
+Hess 6,2010-11-06,Sweltza (Niad),0
+Hess 1,2011-01-21,Sweltza (Niad),1.75966009
+Hess 2,2011-01-21,Sweltza (Niad),1.75966009
+Hess 3,2011-01-21,Sweltza (Niad),5.210598663
+Hess 4,2011-01-21,Sweltza (Niad),3.703893444
+Hess 5,2011-01-21,Sweltza (Niad),2.807314938
+Hess 6,2011-01-21,Sweltza (Niad),6.877304072
+Hess 1,2011-06-09,Sweltza (Niad),0
+Hess 2,2011-06-09,Sweltza (Niad),0
+Hess 3,2011-06-09,Sweltza (Niad),0
+Hess 4,2011-06-09,Sweltza (Niad),0
+Hess 5,2011-06-09,Sweltza (Niad),0
+Hess 6,2011-06-09,Sweltza (Niad),0
+Hess 1,2011-09-04,Sweltza (Niad),0
+Hess 2,2011-09-04,Sweltza (Niad),0
+Hess 3,2011-09-04,Sweltza (Niad),0
+Hess 4,2011-09-04,Sweltza (Niad),0
+Hess 5,2011-09-04,Sweltza (Niad),0
+Hess 6,2011-09-04,Sweltza (Niad),0
+Hess 1,2010-11-06,Chimarra (Larvae),0
+Hess 2,2010-11-06,Chimarra (Larvae),109.4265554
+Hess 3,2010-11-06,Chimarra (Larvae),18.0589415
+Hess 4,2010-11-06,Chimarra (Larvae),31.15430757
+Hess 5,2010-11-06,Chimarra (Larvae),56.66050001
+Hess 6,2010-11-06,Chimarra (Larvae),44.29815129
+Hess 1,2011-01-21,Chimarra (Larvae),549.5973116
+Hess 2,2011-01-21,Chimarra (Larvae),53.08625336
+Hess 3,2011-01-21,Chimarra (Larvae),87.60736164
+Hess 4,2011-01-21,Chimarra (Larvae),42.75824925
+Hess 5,2011-01-21,Chimarra (Larvae),57.70468716
+Hess 6,2011-01-21,Chimarra (Larvae),462.7083361
+Hess 1,2011-06-09,Chimarra (Larvae),34.90004463
+Hess 2,2011-06-09,Chimarra (Larvae),8.942914386
+Hess 3,2011-06-09,Chimarra (Larvae),44.0199529
+Hess 4,2011-06-09,Chimarra (Larvae),17.53134925
+Hess 5,2011-06-09,Chimarra (Larvae),23.82642514
+Hess 6,2011-06-09,Chimarra (Larvae),21.97517457
+Hess 1,2011-09-04,Chimarra (Larvae),5.17000148
+Hess 2,2011-09-04,Chimarra (Larvae),51.6983535
+Hess 3,2011-09-04,Chimarra (Larvae),68.24699166
+Hess 4,2011-09-04,Chimarra (Larvae),134.6225153
+Hess 5,2011-09-04,Chimarra (Larvae),250.0642434
+Hess 6,2011-09-04,Chimarra (Larvae),67.61108512
+Hess 1,2010-11-06,Helicopsyche (Larvae),349.6295537
+Hess 2,2010-11-06,Helicopsyche (Larvae),118.6358626
+Hess 3,2010-11-06,Helicopsyche (Larvae),43.72515015
+Hess 4,2010-11-06,Helicopsyche (Larvae),301.5048867
+Hess 5,2010-11-06,Helicopsyche (Larvae),23.09454451
+Hess 6,2010-11-06,Helicopsyche (Larvae),72.09361328
+Hess 1,2011-01-21,Helicopsyche (Larvae),293.6699108
+Hess 2,2011-01-21,Helicopsyche (Larvae),118.0968626
+Hess 3,2011-01-21,Helicopsyche (Larvae),54.58396133
+Hess 4,2011-01-21,Helicopsyche (Larvae),90.74631517
+Hess 5,2011-01-21,Helicopsyche (Larvae),5.86885376
+Hess 6,2011-01-21,Helicopsyche (Larvae),127.7012906
+Hess 1,2011-06-09,Helicopsyche (Larvae),54.96031046
+Hess 2,2011-06-09,Helicopsyche (Larvae),7.991076996
+Hess 3,2011-06-09,Helicopsyche (Larvae),31.14026826
+Hess 4,2011-06-09,Helicopsyche (Larvae),28.08016857
+Hess 5,2011-06-09,Helicopsyche (Larvae),9.721061332
+Hess 6,2011-06-09,Helicopsyche (Larvae),38.0450331
+Hess 1,2011-09-04,Helicopsyche (Larvae),25.23477359
+Hess 2,2011-09-04,Helicopsyche (Larvae),34.17082789
+Hess 3,2011-09-04,Helicopsyche (Larvae),12.29046776
+Hess 4,2011-09-04,Helicopsyche (Larvae),207.1607227
+Hess 5,2011-09-04,Helicopsyche (Larvae),7.137221504
+Hess 6,2011-09-04,Helicopsyche (Larvae),9.292115675
+Hess 1,2010-11-06,Hydropsyche (Larvae),29.39882901
+Hess 2,2010-11-06,Hydropsyche (Larvae),459.8203176
+Hess 3,2010-11-06,Hydropsyche (Larvae),35.6084123
+Hess 4,2010-11-06,Hydropsyche (Larvae),19.77802049
+Hess 5,2010-11-06,Hydropsyche (Larvae),160.732882
+Hess 6,2010-11-06,Hydropsyche (Larvae),82.06779324
+Hess 1,2011-01-21,Hydropsyche (Larvae),219.4568244
+Hess 2,2011-01-21,Hydropsyche (Larvae),497.2515923
+Hess 3,2011-01-21,Hydropsyche (Larvae),42.01433888
+Hess 4,2011-01-21,Hydropsyche (Larvae),144.9475887
+Hess 5,2011-01-21,Hydropsyche (Larvae),200.8754515
+Hess 6,2011-01-21,Hydropsyche (Larvae),612.7354353
+Hess 1,2011-06-09,Hydropsyche (Larvae),475.9016317
+Hess 2,2011-06-09,Hydropsyche (Larvae),66.94117938
+Hess 3,2011-06-09,Hydropsyche (Larvae),821.1571008
+Hess 4,2011-06-09,Hydropsyche (Larvae),91.06715779
+Hess 5,2011-06-09,Hydropsyche (Larvae),164.6293211
+Hess 6,2011-06-09,Hydropsyche (Larvae),152.3949661
+Hess 1,2011-09-04,Hydropsyche (Larvae),2.876168789
+Hess 2,2011-09-04,Hydropsyche (Larvae),84.15306547
+Hess 3,2011-09-04,Hydropsyche (Larvae),122.9930766
+Hess 4,2011-09-04,Hydropsyche (Larvae),13.08649167
+Hess 5,2011-09-04,Hydropsyche (Larvae),20.59689676
+Hess 6,2011-09-04,Hydropsyche (Larvae),128.7694528
+Hess 1,2010-11-06,Leucotrichia (Larvae),237.5896647
+Hess 2,2010-11-06,Leucotrichia (Larvae),73.07829936
+Hess 3,2010-11-06,Leucotrichia (Larvae),97.56336443
+Hess 4,2010-11-06,Leucotrichia (Larvae),26.25475917
+Hess 5,2010-11-06,Leucotrichia (Larvae),120.0097311
+Hess 6,2010-11-06,Leucotrichia (Larvae),32.72055347
+Hess 1,2011-01-21,Leucotrichia (Larvae),19.15455366
+Hess 2,2011-01-21,Leucotrichia (Larvae),12.89091248
+Hess 3,2011-01-21,Leucotrichia (Larvae),35.03092808
+Hess 4,2011-01-21,Leucotrichia (Larvae),319.6120821
+Hess 5,2011-01-21,Leucotrichia (Larvae),12.7676021
+Hess 6,2011-01-21,Leucotrichia (Larvae),12.48810725
+Hess 1,2011-06-09,Leucotrichia (Larvae),0
+Hess 2,2011-06-09,Leucotrichia (Larvae),0
+Hess 3,2011-06-09,Leucotrichia (Larvae),0
+Hess 4,2011-06-09,Leucotrichia (Larvae),0
+Hess 5,2011-06-09,Leucotrichia (Larvae),0
+Hess 6,2011-06-09,Leucotrichia (Larvae),0
+Hess 1,2011-09-04,Leucotrichia (Larvae),21.79440247
+Hess 2,2011-09-04,Leucotrichia (Larvae),19.32662438
+Hess 3,2011-09-04,Leucotrichia (Larvae),62.39006457
+Hess 4,2011-09-04,Leucotrichia (Larvae),46.1688593
+Hess 5,2011-09-04,Leucotrichia (Larvae),2.810879179
+Hess 6,2011-09-04,Leucotrichia (Larvae),6.317611295
+Hess 1,2010-11-06,Ochrotrichia (Larvae),0.80483812
+Hess 2,2010-11-06,Ochrotrichia (Larvae),2.069148899
+Hess 3,2010-11-06,Ochrotrichia (Larvae),0.546108878
+Hess 4,2010-11-06,Ochrotrichia (Larvae),0.63215539
+Hess 5,2010-11-06,Ochrotrichia (Larvae),0.273054439
+Hess 6,2010-11-06,Ochrotrichia (Larvae),0
+Hess 1,2011-01-21,Ochrotrichia (Larvae),1.882730679
+Hess 2,2011-01-21,Ochrotrichia (Larvae),2.514886069
+Hess 3,2011-01-21,Ochrotrichia (Larvae),0.819163317
+Hess 4,2011-01-21,Ochrotrichia (Larvae),2.974948435
+Hess 5,2011-01-21,Ochrotrichia (Larvae),0
+Hess 6,2011-01-21,Ochrotrichia (Larvae),2.428839557
+Hess 1,2011-06-09,Ochrotrichia (Larvae),0
+Hess 2,2011-06-09,Ochrotrichia (Larvae),0.80483812
+Hess 3,2011-06-09,Ochrotrichia (Larvae),0.273054439
+Hess 4,2011-06-09,Ochrotrichia (Larvae),0.546108878
+Hess 5,2011-06-09,Ochrotrichia (Larvae),0.273054439
+Hess 6,2011-06-09,Ochrotrichia (Larvae),0
+Hess 1,2011-09-04,Ochrotrichia (Larvae),0.63215539
+Hess 2,2011-09-04,Ochrotrichia (Larvae),2.213133571
+Hess 3,2011-09-04,Ochrotrichia (Larvae),2.170110315
+Hess 4,2011-09-04,Ochrotrichia (Larvae),2.24183163
+Hess 5,2011-09-04,Ochrotrichia (Larvae),1.077892559
+Hess 6,2011-09-04,Ochrotrichia (Larvae),1.135241012
+Hess 1,2010-11-06,Polycentropus (Larvae),0
+Hess 2,2010-11-06,Polycentropus (Larvae),0
+Hess 3,2010-11-06,Polycentropus (Larvae),0
+Hess 4,2010-11-06,Polycentropus (Larvae),1.161827596
+Hess 5,2010-11-06,Polycentropus (Larvae),0.178178603
+Hess 6,2010-11-06,Polycentropus (Larvae),0
+Hess 1,2011-01-21,Polycentropus (Larvae),0
+Hess 2,2011-01-21,Polycentropus (Larvae),0
+Hess 3,2011-01-21,Polycentropus (Larvae),0
+Hess 4,2011-01-21,Polycentropus (Larvae),0
+Hess 5,2011-01-21,Polycentropus (Larvae),0
+Hess 6,2011-01-21,Polycentropus (Larvae),0
+Hess 1,2011-06-09,Polycentropus (Larvae),0
+Hess 2,2011-06-09,Polycentropus (Larvae),3.479113069
+Hess 3,2011-06-09,Polycentropus (Larvae),0
+Hess 4,2011-06-09,Polycentropus (Larvae),0
+Hess 5,2011-06-09,Polycentropus (Larvae),0
+Hess 6,2011-06-09,Polycentropus (Larvae),0
+Hess 1,2011-09-04,Polycentropus (Larvae),0
+Hess 2,2011-09-04,Polycentropus (Larvae),0
+Hess 3,2011-09-04,Polycentropus (Larvae),0
+Hess 4,2011-09-04,Polycentropus (Larvae),24.06549919
+Hess 5,2011-09-04,Polycentropus (Larvae),0
+Hess 6,2011-09-04,Polycentropus (Larvae),0
+Hess 1,2010-11-06,Rhyacophila (Larvae),3.99341967
+Hess 2,2010-11-06,Rhyacophila (Larvae),1.791494694
+Hess 3,2010-11-06,Rhyacophila (Larvae),0
+Hess 4,2010-11-06,Rhyacophila (Larvae),0
+Hess 5,2010-11-06,Rhyacophila (Larvae),44.29642414
+Hess 6,2010-11-06,Rhyacophila (Larvae),2.669237865
+Hess 1,2011-01-21,Rhyacophila (Larvae),0
+Hess 2,2011-01-21,Rhyacophila (Larvae),18.9633129
+Hess 3,2011-01-21,Rhyacophila (Larvae),9.99470351
+Hess 4,2011-01-21,Rhyacophila (Larvae),0.321115402
+Hess 5,2011-01-21,Rhyacophila (Larvae),4.907171192
+Hess 6,2011-01-21,Rhyacophila (Larvae),91.89174306
+Hess 1,2011-06-09,Rhyacophila (Larvae),0
+Hess 2,2011-06-09,Rhyacophila (Larvae),0
+Hess 3,2011-06-09,Rhyacophila (Larvae),22.95673257
+Hess 4,2011-06-09,Rhyacophila (Larvae),0
+Hess 5,2011-06-09,Rhyacophila (Larvae),9.99470351
+Hess 6,2011-06-09,Rhyacophila (Larvae),34.1963061
+Hess 1,2011-09-04,Rhyacophila (Larvae),0
+Hess 2,2011-09-04,Rhyacophila (Larvae),0
+Hess 3,2011-09-04,Rhyacophila (Larvae),21.5313441
+Hess 4,2011-09-04,Rhyacophila (Larvae),3.99341967
+Hess 5,2011-09-04,Rhyacophila (Larvae),0
+Hess 6,2011-09-04,Rhyacophila (Larvae),50.01871847
+Hess 1,2010-11-06,Trichoptera (Adult),1.40644642
+Hess 2,2010-11-06,Trichoptera (Adult),67.39828651
+Hess 3,2010-11-06,Trichoptera (Adult),0
+Hess 4,2010-11-06,Trichoptera (Adult),0
+Hess 5,2010-11-06,Trichoptera (Adult),0
+Hess 6,2010-11-06,Trichoptera (Adult),0
+Hess 1,2011-01-21,Trichoptera (Adult),0
+Hess 2,2011-01-21,Trichoptera (Adult),0
+Hess 3,2011-01-21,Trichoptera (Adult),0
+Hess 4,2011-01-21,Trichoptera (Adult),0
+Hess 5,2011-01-21,Trichoptera (Adult),0
+Hess 6,2011-01-21,Trichoptera (Adult),0
+Hess 1,2011-06-09,Trichoptera (Adult),0
+Hess 2,2011-06-09,Trichoptera (Adult),0
+Hess 3,2011-06-09,Trichoptera (Adult),0
+Hess 4,2011-06-09,Trichoptera (Adult),0
+Hess 5,2011-06-09,Trichoptera (Adult),0
+Hess 6,2011-06-09,Trichoptera (Adult),0
+Hess 1,2011-09-04,Trichoptera (Adult),0
+Hess 2,2011-09-04,Trichoptera (Adult),0
+Hess 3,2011-09-04,Trichoptera (Adult),0
+Hess 4,2011-09-04,Trichoptera (Adult),19.92440858
+Hess 5,2011-09-04,Trichoptera (Adult),0
+Hess 6,2011-09-04,Trichoptera (Adult),0
+Hess 1,2010-11-06,Trichoptera (Pupae),0
+Hess 2,2010-11-06,Trichoptera (Pupae),0
+Hess 3,2010-11-06,Trichoptera (Pupae),0
+Hess 4,2010-11-06,Trichoptera (Pupae),0
+Hess 5,2010-11-06,Trichoptera (Pupae),0
+Hess 6,2010-11-06,Trichoptera (Pupae),0
+Hess 1,2011-01-21,Trichoptera (Pupae),0
+Hess 2,2011-01-21,Trichoptera (Pupae),0
+Hess 3,2011-01-21,Trichoptera (Pupae),1.40644642
+Hess 4,2011-01-21,Trichoptera (Pupae),0
+Hess 5,2011-01-21,Trichoptera (Pupae),1.40644642
+Hess 6,2011-01-21,Trichoptera (Pupae),0
+Hess 1,2011-06-09,Trichoptera (Pupae),116.5424242
+Hess 2,2011-06-09,Trichoptera (Pupae),57.00980856
+Hess 3,2011-06-09,Trichoptera (Pupae),184.7274964
+Hess 4,2011-06-09,Trichoptera (Pupae),122.5301194
+Hess 5,2011-06-09,Trichoptera (Pupae),0
+Hess 6,2011-06-09,Trichoptera (Pupae),204.7474168
+Hess 1,2011-09-04,Trichoptera (Pupae),0
+Hess 2,2011-09-04,Trichoptera (Pupae),1.40644642
+Hess 3,2011-09-04,Trichoptera (Pupae),1.40644642
+Hess 4,2011-09-04,Trichoptera (Pupae),7.59350981
+Hess 5,2011-09-04,Trichoptera (Pupae),49.42113202
+Hess 6,2011-09-04,Trichoptera (Pupae),0
+Hess 1,2010-11-06,Hydrachnidia,0.004651163
+Hess 2,2010-11-06,Hydrachnidia,0.000581395
+Hess 3,2010-11-06,Hydrachnidia,0
+Hess 4,2010-11-06,Hydrachnidia,0.001162791
+Hess 5,2010-11-06,Hydrachnidia,0
+Hess 6,2010-11-06,Hydrachnidia,0.002325581
+Hess 1,2011-01-21,Hydrachnidia,0.006976744
+Hess 2,2011-01-21,Hydrachnidia,0.009302326
+Hess 3,2011-01-21,Hydrachnidia,0.001162791
+Hess 4,2011-01-21,Hydrachnidia,0.004651163
+Hess 5,2011-01-21,Hydrachnidia,0.001744186
+Hess 6,2011-01-21,Hydrachnidia,0.000581395
+Hess 1,2011-06-09,Hydrachnidia,0.008139535
+Hess 2,2011-06-09,Hydrachnidia,0.00872093
+Hess 3,2011-06-09,Hydrachnidia,0.005232558
+Hess 4,2011-06-09,Hydrachnidia,0.00872093
+Hess 5,2011-06-09,Hydrachnidia,0.002906977
+Hess 6,2011-06-09,Hydrachnidia,0.009302326
+Hess 1,2011-09-04,Hydrachnidia,0.001162791
+Hess 2,2011-09-04,Hydrachnidia,0.005232558
+Hess 3,2011-09-04,Hydrachnidia,0.001162791
+Hess 4,2011-09-04,Hydrachnidia,0.001162791
+Hess 5,2011-09-04,Hydrachnidia,0.002325581
+Hess 6,2011-09-04,Hydrachnidia,0.002325581
+Hess 1,2010-11-06,Oligochaeta,33.02285917
+Hess 2,2010-11-06,Oligochaeta,18.90968347
+Hess 3,2010-11-06,Oligochaeta,9.691677228
+Hess 4,2010-11-06,Oligochaeta,90.78837302
+Hess 5,2010-11-06,Oligochaeta,8.587503748
+Hess 6,2010-11-06,Oligochaeta,43.21823661
+Hess 1,2011-01-21,Oligochaeta,157.8653316
+Hess 2,2011-01-21,Oligochaeta,101.630208
+Hess 3,2011-01-21,Oligochaeta,33.80185507
+Hess 4,2011-01-21,Oligochaeta,22.29902613
+Hess 5,2011-01-21,Oligochaeta,16.16023621
+Hess 6,2011-01-21,Oligochaeta,63.21566765
+Hess 1,2011-06-09,Oligochaeta,72.97127572
+Hess 2,2011-06-09,Oligochaeta,9.804204055
+Hess 3,2011-06-09,Oligochaeta,23.00508229
+Hess 4,2011-06-09,Oligochaeta,9.731782583
+Hess 5,2011-06-09,Oligochaeta,4.592834867
+Hess 6,2011-06-09,Oligochaeta,47.72318267
+Hess 1,2011-09-04,Oligochaeta,22.65923669
+Hess 2,2011-09-04,Oligochaeta,20.44114468
+Hess 3,2011-09-04,Oligochaeta,8.524573834
+Hess 4,2011-09-04,Oligochaeta,32.97957193
+Hess 5,2011-09-04,Oligochaeta,5.140449236
+Hess 6,2011-09-04,Oligochaeta,6.756191394
+Hess 1,2010-11-06,Ostracoda,0.063953488
+Hess 2,2010-11-06,Ostracoda,0.052325581
+Hess 3,2010-11-06,Ostracoda,0.005813953
+Hess 4,2010-11-06,Ostracoda,0.447674419
+Hess 5,2010-11-06,Ostracoda,0.011627907
+Hess 6,2010-11-06,Ostracoda,0.01744186
+Hess 1,2011-01-21,Ostracoda,0.924418605
+Hess 2,2011-01-21,Ostracoda,0.563953488
+Hess 3,2011-01-21,Ostracoda,0.052325581
+Hess 4,2011-01-21,Ostracoda,0.145348837
+Hess 5,2011-01-21,Ostracoda,0.023255814
+Hess 6,2011-01-21,Ostracoda,0.093023256
+Hess 1,2011-06-09,Ostracoda,0.029069767
+Hess 2,2011-06-09,Ostracoda,0.023255814
+Hess 3,2011-06-09,Ostracoda,0.01744186
+Hess 4,2011-06-09,Ostracoda,0.023255814
+Hess 5,2011-06-09,Ostracoda,0.005813953
+Hess 6,2011-06-09,Ostracoda,0.01744186
+Hess 1,2011-09-04,Ostracoda,0.046511628
+Hess 2,2011-09-04,Ostracoda,0.069767442
+Hess 3,2011-09-04,Ostracoda,0.01744186
+Hess 4,2011-09-04,Ostracoda,0.209302326
+Hess 5,2011-09-04,Ostracoda,0.005813953
+Hess 6,2011-09-04,Ostracoda,0
+Hess 1,2010-11-06,Planaria,83.04433079
+Hess 2,2010-11-06,Planaria,37.73920434
+Hess 3,2010-11-06,Planaria,3.455496114
+Hess 4,2010-11-06,Planaria,51.67601861
+Hess 5,2010-11-06,Planaria,4.202184718
+Hess 6,2010-11-06,Planaria,72.17457131
+Hess 1,2011-01-21,Planaria,32.43632513
+Hess 2,2011-01-21,Planaria,55.76316642
+Hess 3,2011-01-21,Planaria,84.44376917
+Hess 4,2011-01-21,Planaria,15.54123708
+Hess 5,2011-01-21,Planaria,10.33278502
+Hess 6,2011-01-21,Planaria,166.0582694
+Hess 1,2011-06-09,Planaria,6.404914144
+Hess 2,2011-06-09,Planaria,5.772687896
+Hess 3,2011-06-09,Planaria,3.23935061
+Hess 4,2011-06-09,Planaria,0
+Hess 5,2011-06-09,Planaria,0
+Hess 6,2011-06-09,Planaria,3.255020962
+Hess 1,2011-09-04,Planaria,2.292186854
+Hess 2,2011-09-04,Planaria,20.44156642
+Hess 3,2011-09-04,Planaria,8.714039604
+Hess 4,2011-09-04,Planaria,41.02877931
+Hess 5,2011-09-04,Planaria,5.146723448
+Hess 6,2011-09-04,Planaria,6.838735812
+Hess 1,2010-11-06,Empididae (Adult),0
+Hess 2,2010-11-06,Empididae (Adult),0
+Hess 3,2010-11-06,Empididae (Adult),0
+Hess 4,2010-11-06,Empididae (Adult),0
+Hess 5,2010-11-06,Empididae (Adult),0
+Hess 6,2010-11-06,Empididae (Adult),0
+Hess 1,2011-01-21,Empididae (Adult),0
+Hess 2,2011-01-21,Empididae (Adult),0
+Hess 3,2011-01-21,Empididae (Adult),0
+Hess 4,2011-01-21,Empididae (Adult),0
+Hess 5,2011-01-21,Empididae (Adult),0
+Hess 6,2011-01-21,Empididae (Adult),0
+Hess 1,2011-06-09,Empididae (Adult),0
+Hess 2,2011-06-09,Empididae (Adult),0
+Hess 3,2011-06-09,Empididae (Adult),6.253633419
+Hess 4,2011-06-09,Empididae (Adult),0
+Hess 5,2011-06-09,Empididae (Adult),0
+Hess 6,2011-06-09,Empididae (Adult),0
+Hess 1,2011-09-04,Empididae (Adult),0
+Hess 2,2011-09-04,Empididae (Adult),0
+Hess 3,2011-09-04,Empididae (Adult),0
+Hess 4,2011-09-04,Empididae (Adult),0
+Hess 5,2011-09-04,Empididae (Adult),0
+Hess 6,2011-09-04,Empididae (Adult),0
+Hess 1,2010-11-06,Aphidae,0.292328692
+Hess 2,2010-11-06,Aphidae,0.292328692
+Hess 3,2010-11-06,Aphidae,0
+Hess 4,2010-11-06,Aphidae,0
+Hess 5,2010-11-06,Aphidae,0
+Hess 6,2010-11-06,Aphidae,0
+Hess 1,2011-01-21,Aphidae,0
+Hess 2,2011-01-21,Aphidae,0
+Hess 3,2011-01-21,Aphidae,0
+Hess 4,2011-01-21,Aphidae,0
+Hess 5,2011-01-21,Aphidae,0
+Hess 6,2011-01-21,Aphidae,0
+Hess 1,2011-06-09,Aphidae,0
+Hess 2,2011-06-09,Aphidae,0
+Hess 3,2011-06-09,Aphidae,0
+Hess 4,2011-06-09,Aphidae,0
+Hess 5,2011-06-09,Aphidae,0
+Hess 6,2011-06-09,Aphidae,0
+Hess 1,2011-09-04,Aphidae,0
+Hess 2,2011-09-04,Aphidae,0
+Hess 3,2011-09-04,Aphidae,0
+Hess 4,2011-09-04,Aphidae,0
+Hess 5,2011-09-04,Aphidae,0
+Hess 6,2011-09-04,Aphidae,0
+Hess 1,2010-11-06,Cicadellidae,0
+Hess 2,2010-11-06,Cicadellidae,0
+Hess 3,2010-11-06,Cicadellidae,0
+Hess 4,2010-11-06,Cicadellidae,0
+Hess 5,2010-11-06,Cicadellidae,0
+Hess 6,2010-11-06,Cicadellidae,0
+Hess 1,2011-01-21,Cicadellidae,0
+Hess 2,2011-01-21,Cicadellidae,0
+Hess 3,2011-01-21,Cicadellidae,0
+Hess 4,2011-01-21,Cicadellidae,0
+Hess 5,2011-01-21,Cicadellidae,0
+Hess 6,2011-01-21,Cicadellidae,0
+Hess 1,2011-06-09,Cicadellidae,0
+Hess 2,2011-06-09,Cicadellidae,0
+Hess 3,2011-06-09,Cicadellidae,0
+Hess 4,2011-06-09,Cicadellidae,5.316207468
+Hess 5,2011-06-09,Cicadellidae,0
+Hess 6,2011-06-09,Cicadellidae,0
+Hess 1,2011-09-04,Cicadellidae,0
+Hess 2,2011-09-04,Cicadellidae,0
+Hess 3,2011-09-04,Cicadellidae,0
+Hess 4,2011-09-04,Cicadellidae,0
+Hess 5,2011-09-04,Cicadellidae,0.459302326
+Hess 6,2011-09-04,Cicadellidae,0
+Hess 1,2010-11-06,Formicidae (Adult),0
+Hess 2,2010-11-06,Formicidae (Adult),0
+Hess 3,2010-11-06,Formicidae (Adult),0
+Hess 4,2010-11-06,Formicidae (Adult),0
+Hess 5,2010-11-06,Formicidae (Adult),0
+Hess 6,2010-11-06,Formicidae (Adult),0
+Hess 1,2011-01-21,Formicidae (Adult),0
+Hess 2,2011-01-21,Formicidae (Adult),0
+Hess 3,2011-01-21,Formicidae (Adult),0
+Hess 4,2011-01-21,Formicidae (Adult),0
+Hess 5,2011-01-21,Formicidae (Adult),0
+Hess 6,2011-01-21,Formicidae (Adult),0
+Hess 1,2011-06-09,Formicidae (Adult),0.99627971
+Hess 2,2011-06-09,Formicidae (Adult),0
+Hess 3,2011-06-09,Formicidae (Adult),0
+Hess 4,2011-06-09,Formicidae (Adult),0
+Hess 5,2011-06-09,Formicidae (Adult),0
+Hess 6,2011-06-09,Formicidae (Adult),0.99627971
+Hess 1,2011-09-04,Formicidae (Adult),2.936571519
+Hess 2,2011-09-04,Formicidae (Adult),0
+Hess 3,2011-09-04,Formicidae (Adult),0
+Hess 4,2011-09-04,Formicidae (Adult),6.32305929
+Hess 5,2011-09-04,Formicidae (Adult),0
+Hess 6,2011-09-04,Formicidae (Adult),0
+Hess 1,2010-11-06,Isopoda,0
+Hess 2,2010-11-06,Isopoda,0
+Hess 3,2010-11-06,Isopoda,0
+Hess 4,2010-11-06,Isopoda,0
+Hess 5,2010-11-06,Isopoda,0
+Hess 6,2010-11-06,Isopoda,0
+Hess 1,2011-01-21,Isopoda,0
+Hess 2,2011-01-21,Isopoda,0
+Hess 3,2011-01-21,Isopoda,0
+Hess 4,2011-01-21,Isopoda,0
+Hess 5,2011-01-21,Isopoda,0
+Hess 6,2011-01-21,Isopoda,0
+Hess 1,2011-06-09,Isopoda,0
+Hess 2,2011-06-09,Isopoda,2.111825833
+Hess 3,2011-06-09,Isopoda,0
+Hess 4,2011-06-09,Isopoda,0
+Hess 5,2011-06-09,Isopoda,0
+Hess 6,2011-06-09,Isopoda,0
+Hess 1,2011-09-04,Isopoda,0
+Hess 2,2011-09-04,Isopoda,0
+Hess 3,2011-09-04,Isopoda,0
+Hess 4,2011-09-04,Isopoda,0
+Hess 5,2011-09-04,Isopoda,0
+Hess 6,2011-09-04,Isopoda,0
+Hess 1,2010-11-06,Lumbriculus,0
+Hess 2,2010-11-06,Lumbriculus,11.59611148
+Hess 3,2010-11-06,Lumbriculus,5.673986593
+Hess 4,2010-11-06,Lumbriculus,14.45459147
+Hess 5,2010-11-06,Lumbriculus,0
+Hess 6,2010-11-06,Lumbriculus,0
+Hess 1,2011-01-21,Lumbriculus,82.10865911
+Hess 2,2011-01-21,Lumbriculus,1.150326697
+Hess 3,2011-01-21,Lumbriculus,48.00915454
+Hess 4,2011-01-21,Lumbriculus,4.625312675
+Hess 5,2011-01-21,Lumbriculus,4.291076813
+Hess 6,2011-01-21,Lumbriculus,91.95980906
+Hess 1,2011-06-09,Lumbriculus,10.48308843
+Hess 2,2011-06-09,Lumbriculus,0
+Hess 3,2011-06-09,Lumbriculus,5.293171593
+Hess 4,2011-06-09,Lumbriculus,0
+Hess 5,2011-06-09,Lumbriculus,0
+Hess 6,2011-06-09,Lumbriculus,5.673986593
+Hess 1,2011-09-04,Lumbriculus,0
+Hess 2,2011-09-04,Lumbriculus,0
+Hess 3,2011-09-04,Lumbriculus,0
+Hess 4,2011-09-04,Lumbriculus,0
+Hess 5,2011-09-04,Lumbriculus,12.57663919
+Hess 6,2011-09-04,Lumbriculus,6.181747497
