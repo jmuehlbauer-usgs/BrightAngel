@@ -329,7 +329,7 @@ ffgmodAIC <- sapply(ffgmod, function(x) sapply(x, AIC))
 
 ## Get parameters to predict
 tlen <- length(levels(ffg1$Study))
-elen <- length(levels(ffg1$Season))
+flen <- length(levels(ffg1$FFG))
 predparm <- data.frame(Study = levels(ffg1$Study), Season = 'Generic', Unit = 1)
 	
 ## Get model-predicted values and confidence intervals
@@ -350,7 +350,7 @@ fitsg <- fits1[(1 + (dim(fits1)[1] / 2)) : dim(fits1)[1], ]
 diff1 <- data.frame(FFG = levels(ffg1$FFG)) 
 	diff1$LinkDiff = unlist(lapply(ffgmod, function(x) fixef(x[['nb6']])$cond[2]))
 	diff1$DensityDiff = round(exp(diff1$LinkDiff))
-	## The above three lines are in-progress. 
+	## The above three lines are in-progress. Try getting SEs using link='response' 
 fitdiff <- fitsg$Density - fitsw$Density
 	names(fitdiff) <- fitsw$FFG
 fitperc <- round(fitdiff / fitsw$Density, 4)
@@ -436,10 +436,10 @@ cv4 <- cv(ord4)
 	## Probably OK for analysis from this point.
 
 ## Run an NMS with stepdown
-NMS(ord4, maxruns = 10000)
-0
+#NMS(ord4, maxruns = 10000)
 	## Scree plot is typical; suggests 2-3 dimensions would be best.
-	## Going to work with 2D for ease
+	## Going to work with 2D for ease.
+	## Note that this only needs to be run once, hence why it's greyed out now.
 pts2D <- read.csv('NMS Output/NMSPoints2D.csv', row.names = 1)
 spp2D <- read.csv('NMS Output/NMSSpecies2D.csv', row.names = 1)
 
