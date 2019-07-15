@@ -88,9 +88,9 @@ BAreadwrite <- function(){
 
 ## Get data from GitHub
 gitdat <- 'https://raw.githubusercontent.com/jmuehlbauer-usgs/BrightAngel/master/Data/'
-gitfiles <- c('DriftData', 'BenthicData', 'WhitingData')
+gitfiles <- c('DriftData', 'BenthicData', 'WhitingCountData', 'WhitingBiomassData')
 dat <- lapply(paste0(gitdat, gitfiles, '.csv'), read.csv)
-		names(dat) <- c('Drift', 'Benthic', 'Whiting')
+		names(dat) <- c('Drift', 'Benthic', 'WhitingCnt', 'WhitingBio')
 spp <- read.csv(paste0(gitdat, 'SpeciesList.csv'))
 
 
@@ -100,7 +100,7 @@ spp <- read.csv(paste0(gitdat, 'SpeciesList.csv'))
 dat <- lapply(dat, transform, Date = as.Date(Date))
 
 ## Give Whiting Data a barcode name for consistency
-dat$Whiting$BarcodeID <- paste(dat$Whiting$Date, dat$Whiting$SampleID)
+dat$WhitingCnt$BarcodeID <- dat$WhitingBio$BarcodeID <- paste(dat$WhitingCnt$Date, dat$WhitingCnt$SampleID)
 
 ## Add functional feeding groups
 dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
@@ -111,8 +111,8 @@ dat <- lapply(dat, transform, Season = factor(ifelse(month(Date) == 11, 'Novembe
 	levels = c('November', 'January', 'June', 'September')))
 ## Add sample area and raw counts to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
-dat$Whiting$Area <- 0.086 * 2
-dat$Whiting$CountTotal <- dat$Whiting$Density * dat$Whiting$Area
+dat$WhitingCnt$Area <- 0.086 * 2
+dat$WhitingCnt$CountTotal <- dat$WhitingCnt$Density * dat$WhitingCnt$Area
 colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
 
 ## Keep only columns of interest
@@ -128,7 +128,7 @@ dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'Sp
 ## Get taxa list of present taxa
 taxa <- rbind(spp[spp$SpeciesID %in% dat0$Drift$SpeciesID,c('SpeciesID', 'Description')], 
 	spp[spp$SpeciesID %in% dat0$Benthic$SpeciesID, c('SpeciesID', 'Description')], 
-	spp[spp$SpeciesID %in% dat0$Whiting$SpeciesID,c('SpeciesID', 'Description')])
+	spp[spp$SpeciesID %in% dat0$WhitingCnt$SpeciesID,c('SpeciesID', 'Description')])
 	taxa <- taxa[match(unique(taxa$SpeciesID), taxa$SpeciesID),]
 	taxa <- taxa[order(taxa$Description),]
 
@@ -145,13 +145,13 @@ dat1 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt,
 	## Note: Due to possible errors/discrepancies between our data and Whiting's that aren't real.
 unq <- unique(unlist(lapply(dat1, function(x) unique(x[,'SpeciesID']))))
 cnt <- lapply(dat1, function(x) tapply(x[, 'Count'], x[, 'SpeciesID'], sum))
-spptab <- data.frame(SpeciesID = unq, Drift = NA, Benthic = NA, Whiting = NA)
+spptab <- data.frame(SpeciesID = unq, Drift = NA, Benthic = NA, WhitingCnt = NA)
 	spptab$Description <- spp[match(spptab$SpeciesID, spp$SpeciesID), 'Description']
 for(i in 1:3){
 	spptab[, i + 1][match(names(cnt[[i]]), spptab$SpeciesID)] <- cnt[[i]]
 }
 spptabW <- spptab[order(-spptab$Benthic, -spptab$Benthic, spptab$SpeciesID),]
-spptabB <- spptab[order(-spptab$Whiting, -spptab$Benthic, spptab$SpeciesID),]
+spptabB <- spptab[order(-spptab$WhitingCnt, -spptab$Benthic, spptab$SpeciesID),]
 spptab1 <- spptab[order(spptab$Description),]
 	## Note: Whiting saw Chloroperlidae, which we didn't, but there is no obvious substitution.
 	## Cutting Nematoda, Lymnaeidae, Veliidae, Veneroida, which Whiting doesn't have 
@@ -255,7 +255,7 @@ ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
 
 ## Get difference in absolute density and relative abundance from Whiting to our study
 diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelative')], 
-	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
+	function(x) x['Benthic'][[1]] - x['WhitingCnt'][[1]])
 diff2 <- lapply(diff1, function(x){
 	data.frame(Mean = round(rowMeans(x), 4), 
 		SEM = round(apply(x, 1, function(y) sd(y) / sqrt(length(y))), 4))
@@ -290,7 +290,7 @@ plotTypes(plotdiff, 'ObservedDifferences', 'Figures')
 ##### Build model for FFG change #####
 
 ## Combine benthic and Whiting into single dataframe for analysis
-ffg1 <- rbind(ffg$Whiting, ffg$Benthic)
+ffg1 <- rbind(ffg$WhitingCnt, ffg$Benthic)
 	ffg1$Study <- factor(ifelse(year(ffg1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
 ## Build some models
@@ -404,7 +404,7 @@ plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
 ##### Ordination analysis #####
 
 ## Put Whiting and our bnethic data in a single dataframe
-ord1 <- rbind(dat4$Whiting, dat4$Benthic)
+ord1 <- rbind(dat4$WhitingCnt, dat4$Benthic)
 	ord1$Density <- round(ord1$Count / ord1$Unit)
 	ord1$Study <- factor(ifelse(year(ord1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
