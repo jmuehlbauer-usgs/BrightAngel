@@ -251,23 +251,29 @@ dat4 <- lapply(dat4, function(x){
 ffg <- combinefx(dat4, 'FFG')
 	ffg <- lapply(ffg, subset, select = -SpeciesID)
 
-## Get relative counts
+## Get relative counts and biomasses
 ffg <- lapply(ffg, function(x){
-	totals <- tapply(x[, 'Count'], x[, 'BarcodeID'], sum)
-	x[, 'RelCount'] <- round(x[, 'Count'] / totals[match(x[, 'BarcodeID'], names(totals))], 4)
+	cnttot <- tapply(x[, 'Count'], x[, 'BarcodeID'], sum)
+	biotot <- tapply(x[, 'Biomass'], x[, 'BarcodeID'], sum)
+	x[, 'RelCount'] <- round(x[, 'Count'] / cnttot[match(x[, 'BarcodeID'], names(cnttot))], 4)
+	x[, 'RelBiomass'] <- round(x[, 'Biomass'] / biotot[match(x[, 'BarcodeID'], names(biotot))], 4)
 	return(x)
 	})
 
 ## Get mean, standard error, and relative mean by FFG, by season
-ffgmn <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
-ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), 
-	function(x) sd(x) / sqrt(length(x))), 4))
-ffgunit <- lapply(ffg, function(x) 
+ffgcnt <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
+ffgbio <- lapply(ffg, function(x) round(tapply(x[, 'Biomass'], list(x[, 'FFG'], x[, 'Season']), mean), 2))
+ffgsize <- lapply(ffg, function(x) round(tapply(x[, 'Size'], list(x[, 'FFG'], x[, 'Season']), mean), 2))
+#ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), 
+	#function(x) sd(x) / sqrt(length(x))), 4))
+ffgunitcnt <- lapply(ffg, function(x) 
 	round(tapply(x[, 'Count'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
-ffgrel <- lapply(ffg, function(x) round(tapply(x[, 'RelCount'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
-
-ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
-	names(ffgstat) <- c('MeanCount', 'SEM', 'MeanUnit', 'MeanRelCount')
+ffgunitbio <- lapply(ffg, function(x) 
+	round(tapply(x[, 'Biomass'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+ffgrelcnt <- lapply(ffg, function(x) round(tapply(x[, 'RelCount'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+ffgrelbio <- lapply(ffg, function(x) round(tapply(x[, 'RelBiomass'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+ffgstat <- list(ffgcnt, ffgbio, ffgsize, ffgunitcnt, ffgunitbio, ffgrelcnt, ffgrelbio)
+	names(ffgstat) <- c('MeanCount', 'MeanBiomass', 'MeanSize', 'MeanUnitCount', 'MeanUnitBiomass', 'MeanRelCount', 'MeanRelBiomass')
 	ffgstat <- lapply(ffgstat, function(x){
 		lapply(x, function(y){
 			y[is.na(y)] <- 0
@@ -276,40 +282,43 @@ ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
 	})	
 
 
-##### Look at differences by FFG over time #####
+##### Look at differences in by FFG over time #####
 
-## Get difference in absolute density and relative abundance from Whiting to our study
-diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelCount')], 
+## Get difference in absolute and relative density/abundance, biomass, and size from Whiting to our study
+diff1 <- lapply(ffgstat[c('MeanUnitCount', 'MeanRelCount', 'MeanUnitBiomass', 'MeanRelBiomass', 'MeanSize')], 
 	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
 diff2 <- lapply(diff1, function(x){
 	data.frame(Mean = round(rowMeans(x), 4), 
 		SEM = round(apply(x, 1, function(y) sd(y) / sqrt(length(y))), 4))
 	})
 
-## Plot difference in absolute density and relative abundance
+## Plot differences
 plotdiff <- function(){
-	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
-	for(i in 1:2){
+	par(mfcol = c(2, 3), mar = c(2, 5, 0.2, 1.2), cex = 0.8, oma = c(3, 0, 0.2, 0))
+	for(i in 1:5){
 		plot(c(1, 6), c(min(diff2[[i]]$Mean - diff2[[i]]$SEM), max(diff2[[i]]$Mean + diff2[[i]]$SEM)), 
 		xlab = '', ylab = '', axes = FALSE, type = 'n')
-		if(i == 1){
+		if(i %in% c(1, 3)){
 			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-			axis(2, las = 2)
-			mtext(side = 2, bquote('Difference in density ('~m^-2*')'), line = 3.5)
 		} else{
-			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = c('Shredder', 'Scraper/\nGrazer', 
-				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
-			axis(2, las = 2, at = seq(-0.1, 0.3, 0.1), labels = paste0(seq(-0.1, 0.3, 0.1) * 100, '%'))
-			mtext(side = 2, 'Difference in relative abundance', line = 3.7)
+			axis(1, las = 2, at = 1:6, labels = c('Shredder', 
+				'Scraper/\nGrazer', 'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
 		}
+		axis(2, las = 2)
+		if(i == 1){mtext(side = 2, bquote('Difference in density ('*m^-2*')'), line = 3.4, cex = 0.8)}
+		if(i == 2){mtext(side = 2, 'Difference in relative abundance', line = 3.6, cex = 0.8)}
+		if(i == 3){mtext(side = 2, bquote('Difference in biomass ('*mg*'*'*m^-2*')'), line = 3.4, 
+			cex = 0.8)}
+		if(i == 4){mtext(side = 2, 'Difference in relative biomass', line = 3.6, cex = 0.8)}
+		if(i == 5){mtext(side = 2, 'Difference in lengths (mm)', line = 3.4, cex = 0.8)}
 	abline(h = 0, lty = 2)
 	box(bty = 'l')
-	points(diff2[[i]]$Mean, pch = 16, cex = 1.5)
+	points(diff2[[i]]$Mean, pch = 16)
 	with(diff2[[i]], arrows(x0 = 1:6, y0 = Mean - SEM, y1 = Mean + SEM, code = 3, angle = 90, length = 0.05))
 	}
 }
-plotTypes(plotdiff, 'ObservedDifferences', 'Figures')
-	## Panels are pretty similar (which is good).
+plotTypes(plotdiff, 'ObservedDifferences', 'Figures', height = 5.3, width = 9)
+	## Panels are pretty similar, which is good.
 	
 	
 ##### Build model for FFG change #####
@@ -490,7 +499,6 @@ plotord <- function(){
 	axis(2, las = 2)
 	box(bty = 'l')
 	points(pts2D, col = as.numeric(env1$Study) + 1, pch = as.numeric(env1$Season) + 14)
-	#ordihull(pts2D, env1$Study, draw = 'polygon', col = c(2, 3))
 	ordiellipse(pts2D, env1$Study, kind = 'sd', conf = 0.95, col = c(2, 3))
 	text(spp2D, rownames(spp2D), col = 4, cex = 0.6)
 	legend('topright', legend = c('2011', '2016', levels(env1$Season), '95% CI'), 
