@@ -89,7 +89,7 @@ BAreadwrite <- function(){
 ## Get data from GitHub
 gitdat <- 'https://raw.githubusercontent.com/jmuehlbauer-usgs/BrightAngel/master/Data/'
 gitfiles <- c('DriftData', 'BenthicData', 'WhitingData')
-dat <- lapply(paste0(gitdat, gitfiles, '.csv'), read.csv)
+dat <- lapply(paste0(gitdat, gitfiles, '.csv'), read.csv, colClasses = c('Date' = 'character'))
 		names(dat) <- c('Drift', 'Benthic', 'Whiting')
 spp <- read.csv(paste0(gitdat, 'SpeciesList.csv'))
 
@@ -109,19 +109,45 @@ dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 dat <- lapply(dat, transform, Season = factor(ifelse(month(Date) == 11, 'November', 
 	ifelse(month(Date) == 1, 'January', ifelse(month(Date) == 6, 'June', 'September'))),
 	levels = c('November', 'January', 'June', 'September')))
-## Add sample area and raw counts to Whiting data
+## Add sample area, raw counts, and biomass to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
 dat$Whiting$Area <- 0.086 * 2
-dat$Whiting$CountTotal <- dat$Whiting$Density * dat$Whiting$Area
+dat$Whiting$CountTotal <- round(dat$Whiting$Density * dat$Whiting$Area)
+dat$Whiting$Biomass <- round(dat$Whiting$Density * dat$Whiting$Area, 2)
 colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
+
+## Add biomass and mean size for GCMRC data
+for(i in 1 : 2){
+	t1 <- dat[[i]]
+	sizes <- if('C30' %in% colnames(t1)){1:30} else{1:20}
+	reps <- c(0.5, 1:15, 0.5, sizes)
+	mycols <- c(paste0('F', 0:15), 'C0', paste0('C', sizes))
+	t2 <- t1[, mycols]
+	lsize <- matrix(reps, ncol = length(reps), nrow = dim(t2)[1], byrow = TRUE)
+	ABs <- spp[match(t1$SpeciesID, spp$SpeciesID), c('RegressionA', 'RegressionB')]
+	t3 <- round(t2 * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
+	dat[[i]]$Biomass <- round((rowSums(t3[, 1: 16]) * 
+		ifelse(t1$CountF > 0, t1$CountF / (t1$CountF - t1$FExtra), 0)) + 
+		(rowSums(t3[, 17 : (17 + length(sizes + 1))]) * 
+		ifelse(t1$CountC > 0, t1$CountC / (t1$CountC - t1$CExtra), 0)), 2)
+	dat[[i]]$Size <- rowSums(t2 * lsize) / (t1$CountTotal[1] - (t1$CExtra + t1$FExtra))
+}
+### STOPPED HERE.
+
+
 
 ## Keep only columns of interest
 dat0 <- lapply(dat, function(x){
 	mycols <- c('BarcodeID', 'Date', 'Season', ifelse('Density' %in% colnames(x), 'Area', 'Volume'),
 		'SpeciesID', 'FFG', 'CountTotal')
+	if('Biomass' %in% colnames(x)){mycols <- c(mycols, 'Biomass')}
 	x[, mycols]
 	})
-dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count'))
+dat0 <- lapply(dat0, function(x){
+	if('Biomass' %in% colnames(x)){
+		setNames(x, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count', 'Biomass'))
+	} else{setNames(x, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count'))
+	}})
 
 ##### Clean up taxa #####
 
@@ -134,10 +160,10 @@ taxa <- rbind(spp[spp$SpeciesID %in% dat0$Drift$SpeciesID,c('SpeciesID', 'Descri
 
 ## Convert all taxa in different life stages to same Species ID (e.g., CHIL, CHIP, CHIA all become CHIA)
 dat1 <- lapply(dat0, transform, SpeciesID = as.character(SpeciesID))
-origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'CULP', 'WIEA', 'SIMA', 'SIMP', 'BASP', 'BAET', 'LEPA', 
-	'CAPA', 'TRIA', 'TRIP', 'HYSP', 'HYDA')
-newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'CULL', 'WIEL', 'SIML', 'SIML', 'BAEL', 'BAEL', 'LEPL', 
-	'CAPL', 'TRIL', 'TRIL', 'HYDE', 'HYDL')
+origt <- c('MCYA', 'CERA', 'CERP', 'CHIA', 'CHIP', 'CULP', 'EMPA', 'WIEA', 'SIMA', 'SIMP', 'BASP', 'BAET', 
+	'LEPA', 'CAPA', 'TRIA', 'TRIP', 'HYSP', 'HYDA')
+newt <- c('MCYL', 'CERL', 'CERL', 'CHIL', 'CHIL', 'CULL', 'EMPL', 'WIEL', 'SIML', 'SIML', 'BAEL', 'BAEL', 
+	'LEPL', 'CAPL', 'TRIL', 'TRIL', 'HYDE', 'HYDL')
 dat1 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt, 
 	newt[match(SpeciesID, origt)], SpeciesID))
 
@@ -156,7 +182,7 @@ spptab1 <- spptab[order(spptab$Description),]
 	## Note: Whiting saw Chloroperlidae, which we didn't, but there is no obvious substitution.
 	## Cutting Nematoda, Lymnaeidae, Veliidae, Veneroida, which Whiting doesn't have 
 		## (probably didn't count them).
-	## Whiting probably didn't separate Empidid or Tabanid taxa
+	## Whiting probably didn't separate Empidid or Tabanid taxa. He also counted Ostracods (we didn't).
 
 ## Combine congenerics
 origt1 <- c('ELML', 'ELOA', 'PROB', 'HEMR', 'WIEL', 'SILV', 'TABS', 'DICL', 'DRAL', 'DAML', 'COEN', 
@@ -167,7 +193,7 @@ dat2 <- lapply(dat1, transform, SpeciesID = ifelse(SpeciesID %in% origt1,
 	newt1[match(SpeciesID, origt1)], SpeciesID))
 
 ## Cut oddballs, delete 0 count rows
-dat2 <- lapply(dat2, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RHAG', 'CLAM')),])
+dat2 <- lapply(dat2, function(x) x[!(x[, 'SpeciesID'] %in% c('NEMA', 'LYMN', 'RHAG', 'CLAM', 'OSTR')),])
 dat2 <- lapply(dat2, function(x) x[x[, 'Count'] != 0,])
 
 ## Combine rows of same taxa from different life stages
@@ -229,7 +255,7 @@ ffg <- combinefx(dat4, 'FFG')
 ## Get relative counts
 ffg <- lapply(ffg, function(x){
 	totals <- tapply(x[, 'Count'], x[, 'BarcodeID'], sum)
-	x[, 'Relative'] <- round(x[, 'Count'] / totals[match(x[, 'BarcodeID'], names(totals))], 4)
+	x[, 'RelCount'] <- round(x[, 'Count'] / totals[match(x[, 'BarcodeID'], names(totals))], 4)
 	return(x)
 	})
 
@@ -239,10 +265,10 @@ ffgsem <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[
 	function(x) sd(x) / sqrt(length(x))), 4))
 ffgunit <- lapply(ffg, function(x) 
 	round(tapply(x[, 'Count'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
-ffgrel <- lapply(ffg, function(x) round(tapply(x[, 'Relative'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
+ffgrel <- lapply(ffg, function(x) round(tapply(x[, 'RelCount'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
 
 ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
-	names(ffgstat) <- c('MeanCount', 'SEM', 'MeanUnit', 'MeanRelative')
+	names(ffgstat) <- c('MeanCount', 'SEM', 'MeanUnit', 'MeanRelCount')
 	ffgstat <- lapply(ffgstat, function(x){
 		lapply(x, function(y){
 			y[is.na(y)] <- 0
@@ -254,7 +280,7 @@ ffgstat <- list(ffgmn, ffgsem, ffgunit, ffgrel)
 ##### Look at differences by FFG over time #####
 
 ## Get difference in absolute density and relative abundance from Whiting to our study
-diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelative')], 
+diff1 <- lapply(ffgstat[c('MeanUnit', 'MeanRelCount')], 
 	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
 diff2 <- lapply(diff1, function(x){
 	data.frame(Mean = round(rowMeans(x), 4), 
