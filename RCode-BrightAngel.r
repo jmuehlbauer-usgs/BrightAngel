@@ -109,12 +109,15 @@ dat <- lapply(dat, transform, FFG = spp[match(SpeciesID, spp$SpeciesID), 'FFG'])
 dat <- lapply(dat, transform, Season = factor(ifelse(month(Date) == 11, 'November', 
 	ifelse(month(Date) == 1, 'January', ifelse(month(Date) == 6, 'June', 'September'))),
 	levels = c('November', 'January', 'June', 'September')))
-## Add sample area, raw counts, and biomass to Whiting data
+
+## Add sample area, raw counts, biomass, and mean size to Whiting data
 	## Note: Whiting used a 0.086 m^2 Hess, but combined 2 samples per each of his 6 "samples"
 dat$Whiting$Area <- 0.086 * 2
 dat$Whiting$CountTotal <- round(dat$Whiting$Density * dat$Whiting$Area)
-dat$Whiting$Biomass <- round(dat$Whiting$Density * dat$Whiting$Area, 2)
-colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
+dat$Whiting$Biomass <- round(dat$Whiting$Biomass * dat$Whiting$Area, 2)
+Wmatch <- match(dat$Whiting$SpeciesID, spp$SpeciesID)
+dat$Whiting$Size <- round(exp(log(dat$Whiting$Biomass / dat$Whiting$CountTotal / 
+	spp[Wmatch, 'RegressionA']) / spp[Wmatch, 'RegressionB']), 2)
 
 ## Add biomass and mean size for GCMRC data
 for(i in 1 : 2){
@@ -130,24 +133,20 @@ for(i in 1 : 2){
 		ifelse(t1$CountF > 0, t1$CountF / (t1$CountF - t1$FExtra), 0)) + 
 		(rowSums(t3[, 17 : (17 + length(sizes + 1))]) * 
 		ifelse(t1$CountC > 0, t1$CountC / (t1$CountC - t1$CExtra), 0)), 2)
-	dat[[i]]$Size <- rowSums(t2 * lsize) / (t1$CountTotal[1] - (t1$CExtra + t1$FExtra))
+	dat[[i]]$Size <- round(rowSums(t2 * lsize) / (t1$CountTotal - (t1$CExtra + t1$FExtra)), 2)
 }
-### STOPPED HERE.
 
-
+## Rename Benthic Area column for consistency
+colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
 
 ## Keep only columns of interest
 dat0 <- lapply(dat, function(x){
 	mycols <- c('BarcodeID', 'Date', 'Season', ifelse('Density' %in% colnames(x), 'Area', 'Volume'),
-		'SpeciesID', 'FFG', 'CountTotal')
-	if('Biomass' %in% colnames(x)){mycols <- c(mycols, 'Biomass')}
+		'SpeciesID', 'FFG', 'CountTotal', 'Size', 'Biomass')
 	x[, mycols]
 	})
-dat0 <- lapply(dat0, function(x){
-	if('Biomass' %in% colnames(x)){
-		setNames(x, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count', 'Biomass'))
-	} else{setNames(x, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 'Count'))
-	}})
+dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 
+	'Count', 'Size', 'Biomass'))
 
 ##### Clean up taxa #####
 
@@ -225,8 +224,8 @@ dat4 <- lapply(dat4, function(x){
 # Convert SpeciesIDs back to factors
 dat4 <- lapply(dat4, transform, SpeciesID = as.factor(SpeciesID))
 
-## Sort by SampleID then SpeciesID, drop old factor levels
-dat4 <- lapply(dat4, function(x) x[order(x[, 'BarcodeID'], x[, 'SpeciesID']),])
+## Sort by Date, BarcodeID, SpeciesID, drop old factor levels
+dat4 <- lapply(dat4, function(x) x[order(x[, 'Date'], x[, 'BarcodeID'], x[, 'SpeciesID']),])
 	dat4 <- lapply(dat4, droplevels)
 
 ## Add consistent factor levels
@@ -459,7 +458,7 @@ cv3 <- cv(ord3)
 ## Relativize by species max
 ord4 <- rel(ord3)
 cv4 <- cv(ord4)
-	## Dropped cv on columns to 54%, but increased cv on rows to 97%.
+	## Dropped cv on columns to 56%, but increased cv on rows to 98%.
 	## Probably OK for analysis from this point.
 
 ## Run an NMS with stepdown
@@ -481,7 +480,7 @@ env1 <- ord1[unqrow, c('Study', 'Season')]
 
 ## See how groupings load on the ordination
 envpts <- envfit(pts2D, env1)
-	## 24% for pre-post and 17% for season. Neither is great.
+	## 25% for pre-post and 6% for season. Neither is great.
 
 ## Plot groupings on ordination
 plotord <- function(){
@@ -494,8 +493,9 @@ plotord <- function(){
 	#ordihull(pts2D, env1$Study, draw = 'polygon', col = c(2, 3))
 	ordiellipse(pts2D, env1$Study, kind = 'sd', conf = 0.95, col = c(2, 3))
 	text(spp2D, rownames(spp2D), col = 4, cex = 0.6)
-	legend('topright', legend = c('2011', '2016', levels(env1$Season), '95% CI'), col = c(2, 3, rep(1, 5)), 
-		pch = c(rep(15, 2), 15:18, 1), pt.cex = c(1.5, 1.5, rep(1, 4), 1.5), bty = 'n')
+	legend('topright', legend = c('2011', '2016', levels(env1$Season), '95% CI'), 
+		col = c(2, 3, rep(1, 4), 8), pch = c(rep(15, 2), 15:18, 1), 
+		pt.cex = c(1.5, 1.5, rep(1, 4), 1.5), bty = 'n')
 }
 plotTypes(plotord, 'Ordination', 'Figures', height = 6.5)
 	## Not much there.
@@ -509,12 +509,11 @@ envspp1 <- data.frame(round(cbind(envspp$vectors[[1]], envspp$vectors[[2]], envs
 ## Limit to only taxa with R2 >= 25%
 envspp2 <- envspp1[envspp1$R2 >= 0.25,]
 	envspp2$FFG <- spp[match(rownames(envspp2), spp$SpeciesID), 'FFG']
-	## TABL, HYDE, CHIL, PETL, CHIM, and PLAN are most strongly loading on the ordination.
-	## No real theme to these in terms of FFG, although most maybe except HYDE),
-		## are loading in the direction of Whiting's samples.
+	## TABL, HYDE, CHIL, PETL, CHIM, PLAN, and LEPT are most strongly loading on the ordination.
+	## No real theme to these in terms of FFG, although most are loading in the 
+		## direction of Whiting's samples.
 		
 ### NEXT STEPS: 
-	## Consider converting Whiting's Biomass to useable format and backcalculating to lengths to pair with our size data.
 	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
 	## Other patterns shown in the model analysis are largely consistent with a trophic cascade where trout removal increases dace, which decrease inverts.
 	## Looking at change in Biomass as a surrogate for secondary production/standing stock could also be useful.
