@@ -1,5 +1,5 @@
 ##### Bright Angel trophic cascade analysis #####
-## Last updated 15 July 2019 by J.D. Muehlbauer
+## Last updated 17 July 2019 by J.D. Muehlbauer
 
 
 ##### Set up workspace ##### 
@@ -91,13 +91,17 @@ gitdat <- 'https://raw.githubusercontent.com/jmuehlbauer-usgs/BrightAngel/master
 gitfiles <- c('DriftData', 'BenthicData', 'WhitingData')
 dat <- lapply(paste0(gitdat, gitfiles, '.csv'), read.csv, colClasses = c('Date' = 'character'))
 		names(dat) <- c('Drift', 'Benthic', 'Whiting')
-spp <- read.csv(paste0(gitdat, 'SpeciesList.csv'))
+spp <- read.csv('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/SpeciesList.csv')
 
 
 ##### Clean up data #####
 
 ## Convert dates usable format
-dat <- lapply(dat, transform, Date = as.Date(Date))
+dat <- lapply(dat, function(x) {
+	if(length(grep('/', x[,'Date'][1])) > 0){x[,'Date'] <- as.Date(x[,'Date'], format = '%m/%d/%Y')
+	} else{x[,'Date'] <- as.Date(x[,'Date'])}
+	return(x)
+	})
 
 ## Give Whiting Data a barcode name for consistency
 dat$Whiting$BarcodeID <- paste(dat$Whiting$Date, dat$Whiting$SampleID)
@@ -201,9 +205,14 @@ combinefx <- function(oldlist, groupby){
 	for(i in 1:length(oldlist)){
 		t1 <- oldlist[[i]]
 			t1$BarGrp <- paste(t1$BarcodeID, t1[,groupby])
+		tCnt <- aggregate(t1$Count, by = list(t1$BarGrp), sum)
+		tSize <- aggregate(t1$Count * t1$Size, by = list(t1$BarGrp), sum)
+			tSize[, 2] <- round(tSize[, 2] / tCnt[, 2], 2)
+		tBio <- aggregate(t1$Biomass, by = list(t1$BarGrp), sum)
 		t2 <- t1[match(unique(t1$BarGrp), t1$BarGrp),]
-		t3 <- aggregate(t1$Count, by = list(t1$BarGrp), sum)
-		t2$Count <- t3[match(t2$BarGrp, t3[, 1]), 2]
+			t2$Count <- tCnt[match(t2$BarGrp, tCnt[, 1]), 2]
+			t2$Size <- tSize[match(t2$BarGrp, tSize[, 1]), 2]
+			t2$Biomass <- tBio[match(t2$BarGrp, tBio[, 1]), 2]
 		tlist[[i]] <- subset(t2, select = -BarGrp)
 	}
 	names(tlist) <- names(oldlist)
@@ -285,7 +294,8 @@ ffgstat <- list(ffgcnt, ffgbio, ffgsize, ffgunitcnt, ffgunitbio, ffgrelcnt, ffgr
 ##### Look at differences in by FFG over time #####
 
 ## Get difference in absolute and relative density/abundance, biomass, and size from Whiting to our study
-diff1 <- lapply(ffgstat[c('MeanUnitCount', 'MeanRelCount', 'MeanUnitBiomass', 'MeanRelBiomass', 'MeanSize')], 
+diff1 <- lapply(ffgstat[c('MeanUnitCount', 'MeanRelCount', 'MeanUnitBiomass', 'MeanRelBiomass', 
+	'MeanSize')], 
 	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
 diff2 <- lapply(diff1, function(x){
 	data.frame(Mean = round(rowMeans(x), 4), 
@@ -337,19 +347,19 @@ for(i in 1 : length(levels(ffg1$FFG))){
 	ffgmod[[i]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = mydat)
 	ffgmod[[i]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = mydat)
 	## Add a random effect for sample or season
-	ffgmod[[i]]$nb2 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)
-	ffgmod[[i]]$nb3 <- glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)
-	ffgmod[[i]]$nb4 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)
+	ffgmod[[i]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))
+	ffgmod[[i]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))
+	ffgmod[[i]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))
 	## Add pre-post and FFG fixed effects
-	ffgmod[[i]]$nb5 <- glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)
-	ffgmod[[i]]$nb6 <- glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)
-	ffgmod[[i]]$nb7 <- glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat)	
+	ffgmod[[i]]$nb5 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))
+	ffgmod[[i]]$nb6 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))
+	ffgmod[[i]]$nb7 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
+		family = 'nbinom2', data = mydat))	
 }
 	## Note: warnings here are just due to FFGs with NAs that therefore don't fit. Can be ignored.
 	names(ffgmod) <- levels(ffg1$FFG)
@@ -382,9 +392,9 @@ fitsw <- fits1[1 : (dim(fits1)[1] / 2), ]
 fitsg <- fits1[(1 + (dim(fits1)[1] / 2)) : dim(fits1)[1], ]
 
 ## Get model-predicted differences pre-post
-diff1 <- data.frame(FFG = levels(ffg1$FFG)) 
-	diff1$LinkDiff = unlist(lapply(ffgmod, function(x) fixef(x[['nb6']])$cond[2]))
-	diff1$DensityDiff = round(exp(diff1$LinkDiff))
+diff3 <- data.frame(FFG = levels(ffg1$FFG)) 
+	diff3$LinkDiff = unlist(lapply(ffgmod, function(x) fixef(x[['nb6']])$cond[2]))
+	diff3$DensityDiff = round(exp(diff3$LinkDiff))
 	## The above three lines are in-progress. Try getting SEs using link='response' 
 fitdiff <- fitsg$Density - fitsw$Density
 	names(fitdiff) <- fitsw$FFG
