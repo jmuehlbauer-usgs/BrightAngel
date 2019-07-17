@@ -351,7 +351,7 @@ plotpred <- function(){
 		with(mydat, arrows(x0 = 1:2, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
 	}
 }
-plotTypes(plotpred, 'ModelOverall', 'Figures', width = 5)
+plotTypes(plotpred, 'ModelOverall', 'Figures', width = 4)
 	
 	
 
