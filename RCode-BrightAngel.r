@@ -327,27 +327,30 @@ sampmodAIC <- AICtable(sampmod)
 	## Adding a pre-post fixed effect improves Biomass and Size models as well.
 
 ## Get best model for Count, Size, and Biomass
-bestmod <- lapply(sampmod, function(x) {
+bestmod <- function(mods){
+	lapply(mods, function(x) {
 	x[names(which(sapply(x, AIC) == min(sapply(x, AIC), na.rm = TRUE)))][[1]]
 	})
+}
+bestmod0 <- bestmod(sampmod)
 
 ## Get parameters to predict
 predparm0 <- data.frame(Study = levels(samp1$Study), Season = 'Generic', Unit = 1)
 	
 ## Get model-predicted values and confidence intervals
-preds0l <- lapply(bestmod, predict, newdata = predparm0, type = 'link', se.fit = TRUE, 
+preds0l <- lapply(bestmod0, predict, newdata = predparm0, type = 'link', se.fit = TRUE, 
 	allow.new.levels = TRUE)
-preds0r <- lapply(bestmod, predict, newdata = predparm0, type = 'response', se.fit = TRUE, 
+preds0r <- lapply(bestmod0, predict, newdata = predparm0, type = 'response', se.fit = TRUE, 
 	allow.new.levels = TRUE)
 fits0 <- list()
-for(i in 1 : length(bestmod)){
+for(i in 1 : length(bestmod0)){
 	fits0[[i]] <- data.frame(Study = levels(samp1$Study), Unit = 1)
 	fits0[[i]]$LinkFit <- preds0l[[i]]$fit
 	fits0[[i]]$LinkSE <- preds0l[[i]]$se.fit
 	fits0[[i]]$Fit <- round(preds0r[[i]]$fit, 2)
 	fits0[[i]]$SELower <- round(preds0r[[i]]$fit - preds0r[[i]]$se.fit, 2)
 	fits0[[i]]$SEUpper <- round(preds0r[[i]]$fit + preds0r[[i]]$se.fit, 2)
-	if(bestmod[[i]][6]$modelInfo$family$link == 'log'){
+	if(bestmod0[[i]][6]$modelInfo$family$link == 'log'){
 		fits0[[i]]$CILower <- round(exp(fits0[[i]]$LinkFit - (qnorm(0.975) * fits0[[i]]$LinkSE)), 2)
 		fits0[[i]]$CIUpper <- round(exp(fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE)), 2)	
 	} else{
@@ -355,7 +358,7 @@ for(i in 1 : length(bestmod)){
 		fits0[[i]]$CIUpper <- round(fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE), 2)	
 	}
 }
-	names(fits0) <- names(bestmod)
+	names(fits0) <- names(bestmod0)
 
 ## Plot panel graph of overall change in Density, Size, and Biomass
 plotpred <- function(){
@@ -582,7 +585,7 @@ plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
 
 ##### Ordination analysis #####
 
-## Put Whiting and our bnethic data in a single dataframe
+## Put Whiting and our benthic data in a single dataframe
 ord1 <- rbind(dat4$Whiting, dat4$Benthic)
 	ord1$Density <- round(ord1$Count / ord1$Unit)
 	ord1$Study <- factor(ifelse(year(ord1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
@@ -665,7 +668,93 @@ envspp2 <- envspp1[envspp1$R2 >= 0.25,]
 	## TABL, HYDE, CHIL, PETL, CHIM, PLAN, and LEPT are most strongly loading on the ordination.
 	## No real theme to these in terms of FFG, although most are loading in the 
 		## direction of Whiting's samples.
-		
+
+
+##### Look at differences in sample richness and diversity #####
+
+## Get data matrices for Whiting and our Benthic data
+ordlist <- list(Whiting = ord2[substr(rownames(ord2), 1, 1) != 'B', ], 
+	Benthic = ord2[substr(rownames(ord2), 1, 1) == 'B', ])
+	ordlist <- lapply(ordlist, function(x) x[, which(colSums(x) > 0)])
+
+## Get overall richness and diversity
+ordlist0 <- lapply(ordlist, function(x){
+	rownames(x) <- rep(1, dim(x)[1])
+	return(x)
+	})
+rich0 <- data.frame(t(sapply(ordlist0, function(x) data.frame(
+	AllRich = dim(x)[2], AllShann = round(diversity(colSums(x)), 2), 
+	AllSimp = round(diversity(colSums(x), 'simpson'), 2)))))
+	
+## Get sample-level richness and diversity
+rich1 <- lapply(ordlist, function(x) data.frame(
+	Richness = rowSums(x != 0), Shannon = round(diversity(x), 4), 
+	Simpson = round(diversity(x, 'simpson'), 4)))
+rich0$MeanRich <- sapply(rich1, function(x) round(mean(x$Richness), 2))
+rich0$MeanShann <- sapply(rich1, function(x) round(mean(x$Shannon), 2))
+rich0$MeanSimp <- sapply(rich1, function(x) round(mean(x$Simpson), 2))
+
+## Model richness and diversity, using normal distribution
+rich2 <- rbind(rich1$Whiting, rich1$Benthic)
+rich2$Season <- samp1[match(rownames(rich2), samp1$BarcodeID), 'Season']
+rich2$Study <- samp1[match(rownames(rich2), samp1$BarcodeID), 'Study']
+richmod <- list()
+	richmod$Richness$r1 <- glmmTMB(Richness ~ 1, data = rich2)
+	richmod$Richness$r2 <- glmmTMB(Richness ~ 1 + (1 | Season), data = rich2)
+	richmod$Richness$r3 <- glmmTMB(Richness ~ Study + (1 | Season), data = rich2)
+	richmod$Shannon$r1 <- glmmTMB(Shannon ~ 1, data = rich2)
+	richmod$Shannon$r2 <- glmmTMB(Shannon ~ 1 + (1 | Season), data = rich2)
+	richmod$Shannon$r3 <- glmmTMB(Shannon ~ Study + (1 | Season), data = rich2)
+	richmod$Simpson$r1 <- glmmTMB(Simpson ~ 1, data = rich2)
+	richmod$Simpson$r2 <- glmmTMB(Simpson ~ 1 + (1 | Season), data = rich2)
+	richmod$Simpson$r3 <- glmmTMB(Simpson ~ Study + (1 | Season), data = rich2)	
+	names(richmod) <- colnames(rich2)[1 : 3]
+richmodAIC <- AICtable(richmod)
+	## Adding a season random effect helps all models, and adding pre-post really helps.
+
+## Get best model for Count, Size, and Biomass
+bestmod2 <- bestmod(richmod)
+
+## Get parameters to predict
+predparm2 <- data.frame(Study = levels(rich2$Study), Season = 'Generic')
+	
+## Get model-predicted values and confidence intervals
+preds2 <- lapply(bestmod2, predict, newdata = predparm2, type = 'response', se.fit = TRUE, 
+	allow.new.levels = TRUE)
+fits2 <- list()
+for(i in 1 : length(bestmod2)){
+	fits2[[i]] <- data.frame(Study = levels(samp1$Study))
+	fits2[[i]]$Fit <- round(preds2[[i]]$fit, 2)
+	fits2[[i]]$SELower <- round(preds2[[i]]$fit - preds2[[i]]$se.fit, 2)
+	fits2[[i]]$SEUpper <- round(preds2[[i]]$fit + preds2[[i]]$se.fit, 2)
+	fits2[[i]]$CILower <- round(preds2[[i]]$fit - (qnorm(0.975) * preds2[[i]]$se.fit), 2)
+	fits2[[i]]$CIUpper <- round(preds2[[i]]$fit + (qnorm(0.975) * preds2[[i]]$se.fit), 2)	
+}
+	names(fits2) <- names(bestmod2)
+	## Decline in all metrics from pre to post.
+
+## Plot panel graph of overall change in Richness and Shannon's and Simpson's diversity
+plotpred2 <- function(){
+	par(mfrow = c(3, 1), mar = c(3, 5, 0.2, 1), cex = 1)
+	for(i in 1:3){
+		mydat <- fits2[[i]]
+		plot(c(0.5, 2.5), c(min(mydat$SELower), max(mydat$SEUpper)), xlab = '', ylab = '', axes = FALSE, 
+			type = 'n')
+		if(i != 3){axis(1, at = 1:2, labels = FALSE)
+		} else{axis(1, at = 1:2, labels = c('2011', '2016'))
+		}
+		axis(2, las = 2)
+		if(i == 1){mtext(side = 2, 'Richness (taxa per sample)', line = 3.5)}
+		if(i == 2){mtext(side = 2, "Shannon's diversity (H)", line = 3.5)}
+		if(i == 3){mtext(side = 2, "Simpson's diversity (D)", line = 3.5)}
+		box(bty = 'l')
+		points(mydat$Fit, pch = 16, cex = 1.5)
+		with(mydat, arrows(x0 = 1:2, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
+	}
+}
+plotTypes(plotpred2, 'ModelRichnessDiversity', 'Figures', width = 4)
+	
+
 ### NEXT STEPS: 
 	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
 	## Other patterns shown in the model analysis are largely consistent with a trophic cascade where trout removal increases dace, which decrease inverts.
