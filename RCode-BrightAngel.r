@@ -757,6 +757,4 @@ plotTypes(plotpred2, 'ModelRichnessDiversity', 'Figures', width = 4)
 
 ### NEXT STEPS: 
 	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
-	## Other patterns shown in the model analysis are largely consistent with a trophic cascade where trout removal increases dace, which decrease inverts.
-	## Looking at change in Biomass as a surrogate for secondary production/standing stock could also be useful.
 	## Figure out how to get confidence intervals on density differences and relative differences (probably a Jeff task).
