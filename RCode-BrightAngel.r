@@ -263,56 +263,81 @@ samp <- combinefx(dat4, 'BarcodeID')
 ## Combine benthic and Whiting into single dataframe for analysis
 samp1 <- rbind(samp$Whiting, samp$Benthic)
 	samp1$Study <- factor(ifelse(year(samp1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
-	
+
 ## Build some models for count data
 sampmod <- list()
+	sampmod[[1]] <- sampmod[[2]] <- sampmod[[3]] <- list()
+	names(sampmod) <- c('Count', 'Size', 'Biomass')
 	
 ## Find best data distribution (family) to use
-sampmod$lm1 <- glm(Count ~ 1 + offset(Unit), data = samp1)
-sampmod$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = samp1)
-sampmod$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = samp1)
+sampmod[[1]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = samp1)
+sampmod[[1]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = samp1)
+sampmod[[1]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = samp1)
 
 ## Add a random effect for sample or season
-sampmod$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
+sampmod[[1]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
 	family = 'nbinom2', data = samp1))
-sampmod$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
+sampmod[[1]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
 	family = 'nbinom2', data = samp1))
-sampmod$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
+sampmod[[1]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
 	offset(log(Unit)), family = 'nbinom2', data = samp1))
 	
 ## Add pre-post fixed effect
-sampmod$nb5 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
+sampmod[[1]]$nb5 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
 	family = 'nbinom2', data = samp1))
-sampmod$nb6 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
+sampmod[[1]]$nb6 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
 	family = 'nbinom2', data = samp1))
-sampmod$nb7 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + 
+sampmod[[1]]$nb7 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + 
 	offset(log(Unit)), family = 'nbinom2', data = samp1))	
 
 ## Compare models using AIC
-sampmodAIC <- data.frame(AIC = sapply(sampmod, AIC))
+AICtable <- function(modlist){
+	lapply(modlist, function(x) data.frame(
+		AIC = sapply(x, function(y) round(AIC(y), 2)),
+		FixedEffect = sapply(x, function(y){
+			att1 <- attributes(y$modelInfo$reTrms$cond$terms$fixed)$term.labels
+			att2 <- ifelse(length(att1) > 0, att1, 1)
+			return(att2)
+			}),
+		RandomEffect = sapply(x, function(y) {
+			pas1 <- paste(y$modelInfo$grpVar, collapse = ', ')
+			pas2 <- ifelse(pas1 == '', 'None', pas1)
+			return(pas2)
+			})
+		))
+	}
+sampmodAIC <- AICtable(sampmod)
 	## Negative binomial distribution is best bet (over linear/Gaussian and Poisson).
 	## A Season random effect fits best and makes logical sense.
-	## Including a pre-post term improves the model.
+	## Including a pre-post term improves the Count (density) model.
 
-## Build model for size and biomass data
+## Build models for size and biomass data
 	## Using normal distribution for sizes, based on histogram.
 	## Using Gamma distribution for biomass (continuous, right-tailed data).
-	## Keeping random and fixed effects as-is from count model.
-bestmod <- list()
-	bestmod[[1]] <- sampmod$nb6
-bestmod[[2]] <- suppressWarnings(glmmTMB(Size ~ Study + (1 | Season) + offset(Unit), 
+	## Keeping random effect as-is from count model.
+sampmod[[2]]$lm3 <- suppressWarnings(glmmTMB(Size ~ 1 + (1 | Season) + offset(log(Unit)), 
 	family = 'gaussian', data = samp1))
-bestmod[[3]] <- suppressWarnings(glmmTMB(Biomass ~ Study + (1 | Season) + offset(log(Unit)), 
+sampmod[[2]]$lm6 <- suppressWarnings(glmmTMB(Size ~ Study + (1 | Season) + offset(log(Unit)), 
+	family = 'gaussian', data = samp1))	
+sampmod[[3]]$ga3 <- suppressWarnings(glmmTMB(Biomass ~ 1 + (1 | Season) + offset(log(Unit)), 
 	family = Gamma(link = 'log'), data = samp1))
-	names(bestmod) <- c('Count', 'Size', 'Biomass')
+sampmod[[3]]$ga6 <- suppressWarnings(glmmTMB(Biomass ~ Study + (1 | Season) + offset(log(Unit)), 
+	family = Gamma(link = 'log'), data = samp1))	
+sampmodAIC <- AICtable(sampmod)
+	## Adding a pre-post fixed effect improves Biomass and Size models as well.
+
+## Get best model for Count, Size, and Biomass
+bestmod <- lapply(sampmod, function(x) {
+	x[names(which(sapply(x, AIC) == min(sapply(x, AIC), na.rm = TRUE)))][[1]]
+	})
 
 ## Get parameters to predict
 predparm0 <- data.frame(Study = levels(samp1$Study), Season = 'Generic', Unit = 1)
 	
 ## Get model-predicted values and confidence intervals
-preds0l <- lapply(bestmod, predict, newdata = predparm, type = 'link', se.fit = TRUE, 
+preds0l <- lapply(bestmod, predict, newdata = predparm0, type = 'link', se.fit = TRUE, 
 	allow.new.levels = TRUE)
-preds0r <- lapply(bestmod, predict, newdata = predparm, type = 'response', se.fit = TRUE, 
+preds0r <- lapply(bestmod, predict, newdata = predparm0, type = 'response', se.fit = TRUE, 
 	allow.new.levels = TRUE)
 fits0 <- list()
 for(i in 1 : length(bestmod)){
@@ -352,7 +377,6 @@ plotpred <- function(){
 	}
 }
 plotTypes(plotpred, 'ModelOverall', 'Figures', width = 4)
-	
 	
 
 ##### Group specimens by FFG #####
@@ -469,7 +493,7 @@ for(i in 1 : length(levels(ffg1$FFG))){
 	names(ffgmod) <- levels(ffg1$FFG)
 	
 ## Compare models using AIC
-ffgmodAIC <- sapply(ffgmod, function(x) sapply(x, AIC))
+ffgmodAIC <- AICtable(ffgmod)
 	## Negative binomial distribution always the best bet (over linear/Gaussian and Poisson).
 	## The choice of random effect or whether to include one is less clear.
 		## However, BarcodeID doesn't always fit, and a random effect for season is sensible. Use that.
