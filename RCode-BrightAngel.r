@@ -1,5 +1,5 @@
 ##### Bright Angel trophic cascade analysis #####
-## Last updated 17 July 2019 by J.D. Muehlbauer
+## Last updated 1 October 2019 by J.D. Muehlbauer
 
 
 ##### Set up workspace ##### 
@@ -581,6 +581,38 @@ plotpreddiff <- function(){
 	points(1:6, fitperc, pch = 16, cex = 1.5)
 }
 plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
+
+## Plot hybrid graph of the above, with model densities and % difference
+pchs <- c(17, 16, 18)
+cols = c(2, 4, 1)
+legs = c('2011', '2016', '2016-2011')
+plotpredplusdiff <- function(){
+	par(mfrow = c(3, 1), mar = c(3, 5, 0.2, 1), cex = 1)
+	for(i in 1:3){
+		if(i < 3){
+			mydat <- if(i == 1){fitsw} else {fitsg}
+			plot(c(1, 6), c(min(mydat$SELower), max(mydat$SEUpper)), xlab = '', ylab = '', axes = FALSE, 
+				type = 'n')
+			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+			mtext(side = 2, bquote('Invertebrate density ('*m^-2*')'), line = 3.5)
+			points(mydat$Density, pch = pchs[i], col = cols[i], cex = 1.5)
+			with(mydat, arrows(x0 = 1:6, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
+		} else {
+			plot(c(1, 6), c(-1, .25), xlab = '', ylab = '', axes = FALSE, type = 'n')
+			axis(1, at = 1:6, padj = 1, mgp = c(3, 0.2, 0), labels = c('Shredder', 'Scraper/\nGrazer', 
+				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))	
+			mtext(side = 2, 'Relative difference', line = 3.5)
+			abline(h = 0, lty = 2)
+			points(1:6, fitperc, pch = pchs[i], col = cols[i], cex = 1.8)
+			#barplot(fitperc)
+		}
+		axis(2, las = 2)
+		box(bty = 'l')
+		legend('topleft', legend = paste(LETTERS[i], legs[i], sep = '.  '), bty = 'n')
+	}
+}
+plotTypes(plotpredplusdiff, 'ModelDensitiesAndDifferences', 'Figures', filetype = c('pdf', 'png'))
+
 
 
 ##### Ordination analysis #####
