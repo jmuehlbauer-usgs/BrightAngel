@@ -475,35 +475,35 @@ plotTypes(plotdiff, 'ObservedDifferences', 'Figures', height = 5.3, width = 9)
 ffg1 <- rbind(ffg$Whiting, ffg$Benthic)
 	ffg1$Study <- factor(ifelse(year(ffg1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
-## Build some models
-ffgmod <- list()
+## Build some models for density change
+ffgdens <- list()
 for(i in 1 : length(levels(ffg1$FFG))){
 	mydat <- ffg1[ffg1$FFG == levels(ffg1$FFG)[i],]
-	ffgmod[[i]] <- list()
+	ffgdens[[i]] <- list()
 	## Find best data distribution (family) to use
-	ffgmod[[i]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = mydat)
-	ffgmod[[i]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = mydat)
-	ffgmod[[i]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = mydat)
+	ffgdens[[i]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = mydat)
+	ffgdens[[i]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = mydat)
+	ffgdens[[i]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = mydat)
 	## Add a random effect for sample or season
-	ffgmod[[i]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
+	ffgdens[[i]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
 		family = 'nbinom2', data = mydat))
-	ffgmod[[i]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
+	ffgdens[[i]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
 		family = 'nbinom2', data = mydat))
-	ffgmod[[i]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
+	ffgdens[[i]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
 		offset(log(Unit)), family = 'nbinom2', data = mydat))
 	## Add pre-post and FFG fixed effects
-	ffgmod[[i]]$nb5 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + offset(log(Unit)), 
+	ffgdens[[i]]$nb5 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + offset(log(Unit)), 
 		family = 'nbinom2', data = mydat))
-	ffgmod[[i]]$nb6 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	ffgdens[[i]]$nb6 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
 		family = 'nbinom2', data = mydat))
-	ffgmod[[i]]$nb7 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + (1 | Season) + 
+	ffgdens[[i]]$nb7 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + (1 | Season) + 
 		offset(log(Unit)), family = 'nbinom2', data = mydat))	
 }
-	## Note: warnings here are just due to FFGs with NAs that therefore don't fit. Can be ignored.
-	names(ffgmod) <- levels(ffg1$FFG)
+	## Note: Any warnings here are just due to FFGs with NAs that therefore don't fit. Can be ignored.
+	names(ffgdens) <- levels(ffg1$FFG)
 
 ## Compare models using AIC
-ffgmodAIC <- AICtable(ffgmod)
+ffgdensAIC <- AICtable(ffgdens)
 	## Negative binomial distribution always the best bet (over linear/Gaussian and Poisson).
 	## The choice of random effect or whether to include one is less clear.
 		## However, BarcodeID doesn't always fit, and a random effect for season is sensible. Use that.
@@ -511,145 +511,83 @@ ffgmodAIC <- AICtable(ffgmod)
 		## Critical to the analysis though, so use it anyway.
 	## Upshot is to use nb6 for all cases here.
 
+## Do the same for biomass and length models (just the nb6 model version, only gaussian)
+ffgbiom <- ffgsize <- list()
+for(i in 1 : length(levels(ffg1$FFG))){
+	mydat <- ffg1[ffg1$FFG == levels(ffg1$FFG)[i],]
+	ffgbiom[[i]] <- suppressWarnings(glmmTMB(Biomass ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+		data = mydat))
+	ffgsize[[i]] <- suppressWarnings(glmmTMB(Size ~ 0 + Study + (1 | Season), 
+		data = mydat))
+}
+	names(ffgbiom) <- names(ffgsize) <- names(ffgdens)
+
+## Combine all best models into a list
+ffgmod <- list(Density = lapply(ffgdens, function(x) x[['nb6']]), Biomass = ffgbiom, Size = ffgsize)
+
 ## Get parameters to predict
-tlen <- length(levels(ffg1$Study))
-flen <- length(levels(ffg1$FFG))
-predparm <- data.frame(Study = levels(ffg1$Study), Season = 'Generic', Unit = 1)
 	
 ## Get model-predicted values and confidence intervals
-predsl <- lapply(ffgmod, function(x){
-	predict(x[['nb6']], predparm, type = 'link', se.fit = TRUE, allow.new.levels = TRUE)
-	})
-predsr <- lapply(ffgmod, function(x){
-	predict(x[['nb6']], predparm, type = 'response', se.fit = TRUE, allow.new.levels = TRUE)
-	})
-cisl <- lapply(ffgmod, function(x){
-	confint(x[['nb6']])
-	})
-cislrad <- sapply(cisl, function(x){
-	sqrt((x[1, 3] - x[1, 1]) ^ 2 + (x[2, 3] - x[2, 1]) ^ 2)
-	})
-fits1 <- data.frame(FFG = rep(levels(ffg1$FFG), tlen), 
-	Study = rep(levels(ffg1$Study), rep(flen, tlen)), Unit = 1)
-	fits1$LinkFit <- c(t(sapply(predsl, function(x) x[['fit']])))
-	fits1$LinkSE <- c(t(sapply(predsl, function(x) x[['se.fit']])))
-	fits1$Density <- c(t(sapply(predsr, function(x) x[['fit']])))
-	fits1$SELower <- c(t(sapply(predsr, function(x) x[['fit']]))) - 
-		c(t(sapply(predsr, function(x) x[['se.fit']])))
-	fits1$SEUpper <- c(t(sapply(predsr, function(x) x[['fit']]))) + 
-		c(t(sapply(predsr, function(x) x[['se.fit']])))
-fits1$CILower <- exp(c(t(sapply(cisl, function(x) x[1:2, 1]))))
-fits1$CIUpper <- exp(c(t(sapply(cisl, function(x) x[1:2, 2]))))
-fitsw <- fits1[1 : (dim(fits1)[1] / 2), ]
-fitsg <- fits1[(1 + (dim(fits1)[1] / 2)) : dim(fits1)[1], ]
-
-## Get model-predicted differences pre-post
-diff3 <- data.frame(FFG = levels(ffg1$FFG)) 
-	diff3$LinkDiff = unlist(lapply(ffgmod, function(x) fixef(x[['nb6']])$cond[2]))
-	diff3$DensityDiff = round(exp(diff3$LinkDiff))
-	## NOTE: The above three lines are in-progress. Try getting SEs using link='response' 
-fitdiff <- data.frame(Difference = fitsg$Density - fitsw$Density,
-	CILower = exp(fitsg$LinkFit - cislrad) - fitsw$Density,
-	CIUpper = exp(fitsg$LinkFit + cislrad) - fitsw$Density)
-fitperc <- round(fitdiff / fitsw$Density, 4)
-	## Note: Not sure CIs are computed correctly with differences
+predparm <- data.frame(Study = levels(ffg1$Study), Season = 'Generic', Unit = 1)
+fits1 <- lapply(ffgmod, function(x){
+	p1 <- lapply(x, predict, newdata = predparm, type = 'response', se.fit = TRUE, allow.new.levels = TRUE)
+	c1 <- lapply(x, confint)
+	data.frame(FFG = rep(levels(ffg1$FFG), length(levels(ffg1$Study))), 
+		Study = rep(levels(ffg1$Study), rep(length(levels(ffg1$FFG)), length(levels(ffg1$Study)))),
+		Fit = round(c(t(sapply(p1, function(x) x[['fit']]))), 2),
+		SELower = round(c(t(sapply(p1, function(x) x[['fit']] - x[['se.fit']]))), 2),
+		SEUpper = round(c(t(sapply(p1, function(x) x[['fit']] + x[['se.fit']]))), 2),
+		CILower = c(t(sapply(c1, function(x) x[1:2, 1]))),
+		CIUpper = c(t(sapply(c1, function(x) x[1:2, 2])))
+	)})
+for(i in 1: length(fits1)){
+	if(names(fits1)[i] == 'Density') {
+		fits1[[i]]$CILower <- round(exp(fits1[[i]]$CILower), 2)
+		fits1[[i]]$CIUpper <- round(exp(fits1[[i]]$CIUpper), 2)
+	} else {
+		fits1[[i]]$CILower <- round(fits1[[i]]$CILower, 2)
+		fits1[[i]]$CIUpper <- round(fits1[[i]]$CIUpper, 2)
+	}
+}
 
 ## Plot combined graph of Whiting's and our data
 plotmod <- function(){
-	par(mar = c(3, 5, 0.2, 1), cex = 1)
-	plot(c(1, 5), c(min(fits1$CILower), max(fits1$CIUpper)), xlab = '', ylab = '', axes = FALSE, 
+	par(mfrow = c(length(fits1), 1), mar = c(1.4, 4.5, 0.1, 0.7), oma = c(1.5, 0, 0, 0), cex = 1)
+	d1 <- 0.09
+	for(i in 1: length(fits1)){
+		mydat <- fits1[[i]]
+		plot(c(1, 5), c(min(mydat$CILower), max(mydat$CIUpper)), xlab = '', ylab = '', axes = FALSE, 
 			type = 'n')
-	axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
-		'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
-	axis(2, las = 2)
-	mtext(side = 2, bquote('Invertebrate density ('*m^-2*')'), line = 3.5)
-	box(bty = 'l')
-	points((1:5) - 0.1, fitsw$Density, pch = 17, col = 2, cex = 1.5)
-	points((1:5) + 0.1, fitsg$Density, pch = 16, col = 4, cex = 1.5)
-	with(fitsw, arrows(x0 = (1:5) - 0.1, y0 = CILower, y1 = CIUpper, code = 3, angle = 90, length = 0.05))
-	with(fitsg, arrows(x0 = (1:5) + 0.1, y0 = CILower, y1 = CIUpper, code = 3, angle = 90, length = 0.05))
-	legend('topright', legend = c(2011, 2016), pt.cex = 1.5, pch = c(17, 16), col = c(2, 4), bty = 'n')
-}
-plotTypes(plotmod, 'ModelDensitiesCombined', 'Figures', height = 4)
-
-## Plot panel graph of Whiting's and our data
-plotpred <- function(){
-	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
-	for(i in 1:2){
-		mydat <- if(i == 1){fitsw} else{fitsg}
-		plot(c(1, 5), c(min(mydat$SELower), max(mydat$SEUpper)), xlab = '', ylab = '', axes = FALSE, 
-			type = 'n')
-		if(i == 1){axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-		} else{axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
-			'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
-		}
-		axis(2, las = 2)
-		mtext(side = 2, bquote('Invertebrate density ('*m^-2*')'), line = 3.5)
-		box(bty = 'l')
-		points(mydat$Density, pch = 16, cex = 1.5)
-		with(mydat, arrows(x0 = 1:5, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
-		myleg <- ifelse(i == 1, '2011', '2016')
-		legend('topright', legend = myleg, bty = 'n')
-	}
-}
-plotTypes(plotpred, 'ModelDensities', 'Figures')
-
-## Plot graph of modeled absolute and % difference
-plotpreddiff <- function(){
-	par(mfrow = c(2, 1), mar = c(3, 5, 0.2, 1), cex = 1)
-	plot(c(1, 5), c(min(fitsg$Density - fitsw$Density), max(fitsg$Density - fitsw$Density)), 
-		xlab = '', ylab = '', axes = FALSE, type = 'n')
-		axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-		axis(2, las = 2)
-		box(bty = 'l')
-		mtext(side = 2, bquote('Difference in density ('*m^-2*')'), line = 3.5)
-		abline(h = 0, lty = 2)
-		points(1:5, fitsg$Density - fitsw$Density, pch = 16, cex = 1.5)
-	plot(c(1, 5), c(-1, .25), xlab = '', ylab = '', axes = FALSE, type = 'n')
-	axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
-		'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
-	axis(2, las = 2, at = seq(-1, 1, 0.25), labels = paste0(seq(-1, 1, 0.25) * 100, '%'))
-	box(bty = 'l')
-	mtext(side = 2, 'Relative difference', line = 3.7)
-	abline(h = 0, lty = 2)
-	points(1:5, fitperc$Difference, pch = 16, cex = 1.5)
-}
-plotTypes(plotpreddiff, 'ModelDifferences', 'Figures')
-
-## Plot hybrid graph of the above, with model densities and % difference
-pchs <- c(17, 16, 18)
-cols = c(2, 4, 1)
-legs = c('2011', '2016', '2016-2011')
-plotpredplusdiff <- function(){
-	par(mfrow = c(3, 1), mar = c(3, 5, 0.2, 1), cex = 1)
-	for(i in 1:3){
-		if(i < 3){
-			mydat <- if(i == 1){fitsw} else {fitsg}
-			plot(c(1, 5), c(min(mydat$SELower), max(mydat$SEUpper)), xlab = '', ylab = '', axes = FALSE, 
-				type = 'n')
+		if(i == 1){
 			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-			mtext(side = 2, bquote('Invertebrate density ('*m^-2*')'), line = 3.5)
-			points(mydat$Density, pch = pchs[i], col = cols[i], cex = 1.5)
-			with(mydat, arrows(x0 = 1:5, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
-			axis(2, las = 2)
-		} else {
-			plot(c(1, 5), c(-1, 2), xlab = '', ylab = '', axes = FALSE, type = 'n')
-			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
-				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))	
-			mtext(side = 2, 'Relative difference', line = 3.5)
-			abline(h = 0, lty = 2)
-			points(1:5, fitperc$Difference, pch = pchs[i], col = cols[i], cex = 1.8)
-			arrows(1:5, fitperc$CILower, 1:5, fitperc$CIUpper, code = 3, angle = 90, length = 0.1)
-			axis(2, las = 2, at = seq(-1, 2, 0.5), labels = paste0(seq(-1, 2, 0.5) * 100, '%'))
+			mtext(side = 2, bquote('Invertebrate density (#*'*m^-2*')'), line = 3.2)
+			legend(1.5, 4750, legend = c(2011, 2016), pt.cex = 1.5, pch = c(17, 16), col = c(2, 4), 
+				bty = 'n')
 		}
+		if(i == 2){
+			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+			mtext(side = 2, bquote('Invertebrate biomass (mg*'*m^-2*')'), line = 3.2)
+		}
+		if (i == 3){
+			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
+				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
+			mtext(side = 2, 'Invertebrate length (mm)', line = 3.2)
+		}
+		axis(2, las = 2)
 		box(bty = 'l')
-		legend('topright', legend = paste(LETTERS[i], legs[i], sep = '.  '), bty = 'n')
+		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower, y1 = CIUpper, 
+			code = 3, angle = 90, length = 0.05))
+		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower, y1 = CIUpper, 
+			code = 3, angle = 90, length = 0.05))
+		points((1:5) - d1, mydat[mydat$Study == 'Pre', 'Fit'], pch = 17, col = 2, cex = 1.5)
+		points((1:5) + d1, mydat[mydat$Study == 'Post', 'Fit'], pch = 16, col = 4, cex = 1.5)
+		legend('topleft', legend = LETTERS[i], bty = 'n')
 	}
 }
-plotTypes(plotpredplusdiff, 'ModelDensitiesAndDifferences', 'Figures', filetype = c('pdf', 'png'))
-
-## Plot panel of modeled differences by study and observed differences by FFG
-
+plotTypes(plotmod, 'ModelDensitiesCombined', 'Figures')
+	### STOPPED HERE.
+	### NOTE: This works, but size and biomass might better be fit by a nb or poisson after all. 
+		## Try model selection.
 
 ##### Ordination analysis #####
 
@@ -829,7 +767,7 @@ plotpred2 <- function(){
 plotTypes(plotpred2, 'ModelRichnessDiversity', 'Figures', width = 4)
 	
 ## Plot species accumulation curves
-spac <- lapply(ordlist, specaccum)
+spac <- suppressWarnings(lapply(ordlist, specaccum))
 plotaccum <- function(){
 	par(mar = c(4, 4, 0.2, 1), cex = 1)
 	plot(spac[[1]], col = 2, lwd = 1, ci.type = 'poly', ci.col = 'lightpink', ci.lty = 0, xlab = 'Number of samples', ylab = 'Cumulative taxa', bty = 'n', axes = FALSE, xlim = c(0, 25))
@@ -839,8 +777,9 @@ plotaccum <- function(){
 	box(bty = 'l')
 	legend(20, 23, legend = c('2011', '2016'), col = c(2, 4), lwd = 1, bty = 'n')
 }
-plotTypes(plotaccum, 'SpeciesAccumulation', 'Figures', height = 6.5)
-
+suppressWarnings(plotTypes(plotaccum, 'SpeciesAccumulation', 'Figures', height = 6.5))
+	## Note: Warnings here have to do with plotting and are overridden. Can be ignored.
 
 ### NEXT STEPS: 
-	## Could be interesting to see if predators have gotten bigger, for instance (are large Corydalus and Odonates invulnerable to dace predation?)
+	## Could be interesting to see if predators have gotten bigger, for instance 
+		## (are large Corydalus and Odonates invulnerable to dace predation?)
