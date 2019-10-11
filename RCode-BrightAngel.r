@@ -6,7 +6,7 @@
 
 ## Load/install requisite packages
 source('https://github.com/jmuehlbauer-usgs/R-packages/blob/master/packload.r?raw=TRUE')
-packload(c('devtools', 'lubridate', 'plots', 'bugR', 'MASS', 'glmmTMB'))
+packload(c('devtools', 'lubridate', 'plots', 'bugR', 'glmmTMB'))
 
 ## Set working directory (depends on whether Jeff or Megan)
 if(Sys.info()[6]=='jmuehlbauer'){
@@ -209,10 +209,10 @@ combinefx <- function(oldlist, groupby){
 	for(i in 1:length(oldlist)){
 		t1 <- oldlist[[i]]
 			t1$BarGrp <- paste(t1$BarcodeID, t1[,groupby])
-		tCnt <- aggregate(t1$Count, by = list(t1$BarGrp), sum)
-		tSize <- aggregate(t1$Count * t1$Size, by = list(t1$BarGrp), sum)
+		tCnt <- aggregate(t1$Count, by = list(t1$BarGrp), sum, na.rm = TRUE)
+		tSize <- aggregate(t1$Count * t1$Size, by = list(t1$BarGrp), sum, na.rm = TRUE)
 			tSize[, 2] <- round(tSize[, 2] / tCnt[, 2], 2)
-		tBio <- aggregate(t1$Biomass, by = list(t1$BarGrp), sum)
+		tBio <- aggregate(t1$Biomass, by = list(t1$BarGrp), sum, na.rm = TRUE)
 		t2 <- t1[match(unique(t1$BarGrp), t1$BarGrp),]
 			t2$Count <- tCnt[match(t2$BarGrp, tCnt[, 1]), 2]
 			t2$Size <- tSize[match(t2$BarGrp, tSize[, 1]), 2]
@@ -270,32 +270,34 @@ samp <- combinefx(dat4, 'BarcodeID')
 ## Combine benthic and Whiting into single dataframe for analysis
 samp1 <- rbind(samp$Whiting, samp$Benthic)
 	samp1$Study <- factor(ifelse(year(samp1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
-
+	samp1 <- subset(samp1, select = -FFG)
+	
 ## Build some models for count data
 sampmod <- list()
 	sampmod[[1]] <- sampmod[[2]] <- sampmod[[3]] <- list()
 	names(sampmod) <- c('Count', 'Size', 'Biomass')
 	
 ## Find best data distribution (family) to use
-sampmod[[1]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = samp1)
-sampmod[[1]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = samp1)
-sampmod[[1]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = samp1)
+sampmod[[1]]$lm1 <- glmmTMB(Count ~ 1 + offset(Unit), data = samp1)
+sampmod[[1]]$po1 <- glmmTMB(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = samp1)
+sampmod[[1]]$nb1 <- glmmTMB(Count ~ 1 + offset(log(Unit)), family = 'nbinom2', data = samp1)
 
 ## Add a random effect for sample or season
-sampmod[[1]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
-	family = 'nbinom2', data = samp1))
-sampmod[[1]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
-	family = 'nbinom2', data = samp1))
-sampmod[[1]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
-	offset(log(Unit)), family = 'nbinom2', data = samp1))
+sampmod[[1]]$nb2 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
+	family = 'nbinom2', data = samp1)
+sampmod[[1]]$nb3 <- glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = samp1)
+sampmod[[1]]$nb4 <- glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = samp1)
 	
 ## Add pre-post fixed effect
-sampmod[[1]]$nb5 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + offset(log(Unit)), 
+sampmod[[1]]$nb5 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + offset(log(Unit)), 
 	family = 'nbinom2', data = samp1))
-sampmod[[1]]$nb6 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | Season) + offset(log(Unit)), 
-	family = 'nbinom2', data = samp1))
-sampmod[[1]]$nb7 <- suppressWarnings(glmmTMB(Count ~ Study + (1 | BarcodeID) + (1 | Season) + 
-	offset(log(Unit)), family = 'nbinom2', data = samp1))	
+sampmod[[1]]$nb6 <- glmmTMB(Count ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = samp1)
+sampmod[[1]]$nb7 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + (1 | Season) + 
+	offset(log(Unit)), family = 'nbinom2', data = samp1))
+	## Note: nb7 doesn't fit well and isn't a good model, hence the warning suppression.
 
 ## Compare models using AIC
 AICtable <- function(modlist){
@@ -315,31 +317,62 @@ AICtable <- function(modlist){
 	}
 sampmodAIC <- AICtable(sampmod)
 	## Negative binomial distribution is best bet (over linear/Gaussian and Poisson).
-	## A Season random effect fits best and makes logical sense.
+	## A Season random effect is co-equivalent with no random effect.
+		## Having this random effect and makes logical sense though given uneven sample effort by season.
 	## Including a pre-post term improves the Count (density) model.
 
 ## Build models for size and biomass data
-	## Using normal distribution for sizes, based on histogram.
-	## Using Gamma distribution for biomass (continuous, right-tailed data).
 	## Keeping random effect as-is from count model.
-sampmod[[2]]$lm3 <- suppressWarnings(glmmTMB(Size ~ 1 + (1 | Season) + offset(log(Unit)), 
-	family = 'gaussian', data = samp1))
-sampmod[[2]]$lm6 <- suppressWarnings(glmmTMB(Size ~ Study + (1 | Season) + offset(log(Unit)), 
-	family = 'gaussian', data = samp1))	
-sampmod[[3]]$ga3 <- suppressWarnings(glmmTMB(Biomass ~ 1 + (1 | Season) + offset(log(Unit)), 
-	family = Gamma(link = 'log'), data = samp1))
-sampmod[[3]]$ga6 <- suppressWarnings(glmmTMB(Biomass ~ Study + (1 | Season) + offset(log(Unit)), 
-	family = Gamma(link = 'log'), data = samp1))	
+sampmod[[2]]$lm6 <- glmmTMB(Size ~ 0 + Study + (1 | Season),
+	family = 'gaussian', data = samp1)
+sampmod[[2]]$ln6 <- glmmTMB(log(Size) ~ 0 + Study + (1 | Season),
+	family = 'gaussian', data = samp1)
+sampmod[[2]]$ga6 <- glmmTMB(Size ~ 0 + Study + (1 | Season),
+	family = Gamma(link = 'log'), data = samp1)
+sampmod[[3]]$lm6 <- glmmTMB(Biomass ~ 0 + Study + (1 | Season) + offset(Unit), 
+	family = 'gaussian', data = samp1)
+sampmod[[3]]$ln6 <- glmmTMB(log(Biomass) ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	family = 'gaussian', data = samp1)
+sampmod[[3]]$ga6 <- glmmTMB(Biomass ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	family = Gamma(link = 'log'), data = samp1)
 sampmodAIC <- AICtable(sampmod)
-	## Adding a pre-post fixed effect improves Biomass and Size models as well.
-
+	for(i in 1 : length(sampmodAIC)){
+		sampmodAIC[[i]][,c('ModelPre', 'ModelPost')] <- t(sapply(sampmod[[i]], function(x){
+			if(grepl('Study', x$call[2])){
+				if(x$modelInfo$family$link == 'log' | grepl('log', x$call[2]) == TRUE){
+					round(exp(fixef(x)[[1]]), 2)
+				} else{round(fixef(x)[[1]], 2)}
+			} else{rep(NA, 2)}
+		}))
+	}
+sampmodAIC$SampMeans <- data.frame(Metric = c('Count', 'Size', 'Biomass'),
+	Pre = rep(NA, length(sampmodAIC)), Post = rep(NA, length(sampmodAIC)))
+	for(i in 1 : dim(sampmodAIC$SampMeans)[1]){
+		if(sampmodAIC$SampMeans$Metric[i] == 'Size'){
+			sampmodAIC$SampMeans[i, 2:3] <- round(tapply(samp1[,
+				as.character(sampmodAIC$SampMeans$Metric[i])], 
+				samp1$Study, mean, na.rm = TRUE), 2)
+		} else{
+			sampmodAIC$SampMeans[i, 2:3] <- round(tapply(samp1[,
+				as.character(sampmodAIC$SampMeans$Metric[i])] / samp1$Unit, 
+				samp1$Study, mean, na.rm = TRUE), 2)
+		}
+	}
+	## Looking at AICs and model estimates vs. sample means, use nb6 for Count, lm6 for Size, ga6 for Biom.
+		## "6" indicates a Season random effect, nb is negative binomial, lm is gaussian, ga is gamma.
+		
 ## Get best model for Count, Size, and Biomass
 bestmod <- function(mods){
 	lapply(mods, function(x) {
 	x[names(which(sapply(x, AIC) == min(sapply(x, AIC), na.rm = TRUE)))][[1]]
 	})
 }
-bestmod0 <- bestmod(sampmod)
+	## Note: function works later, but not here (due to lognormal).
+bestmod0 <- with(sampmod, list(Count$nb6, Size$lm6, Biomass$ga6))
+	names(bestmod0) <- sampmodAIC$SampMeans$Metric
+
+
+##### Get predicted values and plot change #####
 
 ## Get parameters to predict
 predparm0 <- data.frame(Study = levels(samp1$Study), Season = 'Generic', Unit = 1)
@@ -351,43 +384,50 @@ preds0r <- lapply(bestmod0, predict, newdata = predparm0, type = 'response', se.
 	allow.new.levels = TRUE)
 fits0 <- list()
 for(i in 1 : length(bestmod0)){
-	fits0[[i]] <- data.frame(Study = levels(samp1$Study), Unit = 1)
+	fits0[[i]] <- data.frame(Study = predparm0$Study)
 	fits0[[i]]$LinkFit <- preds0l[[i]]$fit
 	fits0[[i]]$LinkSE <- preds0l[[i]]$se.fit
-	fits0[[i]]$Fit <- round(preds0r[[i]]$fit, 2)
-	fits0[[i]]$SELower <- round(preds0r[[i]]$fit - preds0r[[i]]$se.fit, 2)
-	fits0[[i]]$SEUpper <- round(preds0r[[i]]$fit + preds0r[[i]]$se.fit, 2)
+	fits0[[i]]$Fit <- preds0r[[i]]$fit
+	fits0[[i]]$SELower <- preds0r[[i]]$fit - preds0r[[i]]$se.fit
+	fits0[[i]]$SEUpper <- preds0r[[i]]$fit + preds0r[[i]]$se.fit
 	if(bestmod0[[i]][6]$modelInfo$family$link == 'log'){
-		fits0[[i]]$CILower <- round(exp(fits0[[i]]$LinkFit - (qnorm(0.975) * fits0[[i]]$LinkSE)), 2)
-		fits0[[i]]$CIUpper <- round(exp(fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE)), 2)	
+		fits0[[i]]$CILower95 <- exp(fits0[[i]]$LinkFit - (qnorm(0.975) * fits0[[i]]$LinkSE))
+		fits0[[i]]$CIUpper95 <- exp(fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE))
+		fits0[[i]]$CILower50 <- exp(fits0[[i]]$LinkFit - (qnorm(0.75) * fits0[[i]]$LinkSE))
+		fits0[[i]]$CIUpper50 <- exp(fits0[[i]]$LinkFit + (qnorm(0.75) * fits0[[i]]$LinkSE))			
 	} else{
-		fits0[[i]]$CILower <- round(fits0[[i]]$LinkFit - (qnorm(0.975) * fits0[[i]]$LinkSE), 2)
-		fits0[[i]]$CIUpper <- round(fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE), 2)	
+		fits0[[i]]$CILower95 <- fits0[[i]]$LinkFit - (qnorm(0.975) * fits0[[i]]$LinkSE)
+		fits0[[i]]$CIUpper95 <- fits0[[i]]$LinkFit + (qnorm(0.975) * fits0[[i]]$LinkSE)
+		fits0[[i]]$CILower50 <- fits0[[i]]$LinkFit - (qnorm(0.75) * fits0[[i]]$LinkSE)
+		fits0[[i]]$CIUpper50 <- fits0[[i]]$LinkFit + (qnorm(0.75) * fits0[[i]]$LinkSE)		
 	}
-}
+}	
+	fits0 <- lapply(fits0, function(x){cbind(Study = x[, 1], round(x[, -1], 2))})
 	names(fits0) <- names(bestmod0)
 
 ## Plot panel graph of overall change in Density, Size, and Biomass
 plotpred <- function(){
-	par(mfrow = c(3, 1), mar = c(3, 5, 0.2, 1), cex = 1)
-	for(i in 1:3){
+par(mfrow = c(3, 1), mar = c(2, 5, 0.1, 0.1), cex = 1)	
+for(i in 1:3){
 		mydat <- fits0[[i]]
-		plot(c(0.5, 2.5), c(min(mydat$SELower), max(mydat$SEUpper)), xlab = '', ylab = '', axes = FALSE, 
-			type = 'n')
+		plot(c(0.5, 2.5), c(min(mydat$CILower95), max(mydat$CIUpper95)), xlab = '', ylab = '', 
+			axes = FALSE, type = 'n')
 		if(i != 3){axis(1, at = 1:2, labels = FALSE)
 		} else{axis(1, at = 1:2, labels = c('2011', '2016'))
 		}
 		axis(2, las = 2)
-		if(i == 1){mtext(side = 2, bquote('Invertebrate density ('*m^-2*')'), line = 3.5)}
+		if(i == 1){mtext(side = 2, bquote('Invertebrate density (#*'*m^-2*')'), line = 3.5)}
 		if(i == 2){mtext(side = 2, 'Mean invertebrate size (mm)', line = 3.5)}
 		if(i == 3){mtext(side = 2, bquote('Invertebrate biomass (mg*'*m^-2*')'), line = 3.5)}
 		box(bty = 'l')
-		points(mydat$Fit, pch = 16, cex = 1.5)
-		with(mydat, arrows(x0 = 1:2, y0 = SELower, y1 = SEUpper, code = 3, angle = 90, length = 0.05))
+		with(mydat, arrows(x0 = 1:2, y0 = CILower95, y1 = CIUpper95, code = 3, angle = 90, length = 0.05))
+		with(mydat, arrows(x0 = 1:2, y0 = CILower50, y1 = CIUpper50, length = 0, col = 'grey50', lwd = 4))
+		points(mydat$Fit, pch = c(17, 16), col = c(2, 4), cex = 1.5)
+		legend('topright', LETTERS[i], bty = 'n')
 	}
 }
-plotTypes(plotpred, 'ModelOverall', 'Figures', width = 4)
-	
+plotTypes(plotpred, 'ModelDensitySizeBiomassOverall', 'Figures', width = 4)
+
 
 ##### Group specimens by FFG #####
 
@@ -404,151 +444,71 @@ ffg <- lapply(ffg, function(x){
 	return(x)
 	})
 
-## Get mean and relative mean by FFG, by season
-ffgcnt <- lapply(ffg, function(x) round(tapply(x[, 'Count'], list(x[, 'FFG'], x[, 'Season']), mean)))
-ffgbio <- lapply(ffg, function(x) round(tapply(x[, 'Biomass'], list(x[, 'FFG'], x[, 'Season']), mean), 2))
-ffgsize <- lapply(ffg, function(x) round(tapply(x[, 'Size'], list(x[, 'FFG'], x[, 'Season']), mean), 2))
-ffgunitcnt <- lapply(ffg, function(x) 
-	round(tapply(x[, 'Count'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
-ffgunitbio <- lapply(ffg, function(x) 
-	round(tapply(x[, 'Biomass'] / x[, 'Unit'], list(x[, 'FFG'], x[, 'Season']), mean), 4))
-ffgrelcnt <- lapply(ffg, function(x) round(tapply(x[, 'RelCount'], list(x[, 'FFG'], x[, 'Season']), 
-	mean), 4))
-ffgrelbio <- lapply(ffg, function(x) round(tapply(x[, 'RelBiomass'], list(x[, 'FFG'], x[, 'Season']), 
-	mean), 4))
-ffgstat <- list(ffgcnt, ffgbio, ffgsize, ffgunitcnt, ffgunitbio, ffgrelcnt, ffgrelbio)
-	names(ffgstat) <- c('MeanCount', 'MeanBiomass', 'MeanSize', 'MeanUnitCount', 'MeanUnitBiomass', 'MeanRelCount', 'MeanRelBiomass')
-	ffgstat <- lapply(ffgstat, function(x){
-		lapply(x, function(y){
-			y[is.na(y)] <- 0
-			return(y)
-		})
-	})	
-
-
-##### Look at differences by FFG over time #####
-
-## Get difference in absolute and relative density/abundance, biomass, and size from Whiting to our study
-diff1 <- lapply(ffgstat[c('MeanUnitCount', 'MeanRelCount', 'MeanUnitBiomass', 'MeanRelBiomass', 
-	'MeanSize')], 
-	function(x) x['Benthic'][[1]] - x['Whiting'][[1]])
-diff2 <- lapply(diff1, function(x){
-	data.frame(Mean = round(rowMeans(x), 4), 
-		SEM = round(apply(x, 1, function(y) sd(y) / sqrt(length(y))), 4),
-		CI = round(apply(x, 1, function(y) qnorm(0.975) * sd(y) / sqrt(length(y))), 4)
-	)})
-
-## Plot differences
-plotdiff <- function(){
-	par(mfcol = c(2, 3), mar = c(2, 5, 0.2, 1.2), cex = 0.8, oma = c(3, 0, 0.2, 0))
-	for(i in 1:5){
-		plotmax <- max(diff2[[i]]$Mean + diff2[[i]]$SEM)
-		plot(c(1, 5), c(min(diff2[[i]]$Mean - diff2[[i]]$SEM), ifelse(plotmax > 0, plotmax, 0)), 
-		xlab = '', ylab = '', axes = FALSE, type = 'n')
-		if(i %in% c(1, 3)){
-			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-		} else{
-			axis(1, las = 2, at = 1:5, labels = c('Scraper/\nGrazer', 'Collector\nFilterer', 
-				'Collector\nGatherer', 'Generalist', 'Predator'))
-		}
-		axis(2, las = 2)
-		if(i == 1){mtext(side = 2, bquote('Difference in density ('*m^-2*')'), line = 3.4, cex = 0.8)}
-		if(i == 2){mtext(side = 2, 'Difference in relative abundance', line = 3.6, cex = 0.8)}
-		if(i == 3){mtext(side = 2, bquote('Difference in biomass ('*mg*'*'*m^-2*')'), line = 3.4, 
-			cex = 0.8)}
-		if(i == 4){mtext(side = 2, 'Difference in relative biomass', line = 3.6, cex = 0.8)}
-		if(i == 5){mtext(side = 2, 'Difference in lengths (mm)', line = 3.4, cex = 0.8)}
-	abline(h = 0, lty = 2)
-	box(bty = 'l')
-	points(diff2[[i]]$Mean, pch = 16)
-	with(diff2[[i]], arrows(x0 = 1:5, y0 = Mean - SEM, y1 = Mean + SEM, code = 3, angle = 90, 
-		length = 0.05))
-	}
-}
-plotTypes(plotdiff, 'ObservedDifferences', 'Figures', height = 5.3, width = 9)
-	## Panels are pretty similar, which is good.
-	
-	
-##### Build model for FFG change #####
-
 ## Combine benthic and Whiting into single dataframe for analysis
 ffg1 <- rbind(ffg$Whiting, ffg$Benthic)
 	ffg1$Study <- factor(ifelse(year(ffg1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
+	ffg1 <- ffg1[, c('BarcodeID', 'Date', 'Study', 'Season', 'Unit', 'FFG', 'Count', 'Size', 'Biomass', 
+		'RelCount', 'RelBiomass')]
 
-## Build some models for density change
-ffgdens <- list()
-for(i in 1 : length(levels(ffg1$FFG))){
-	mydat <- ffg1[ffg1$FFG == levels(ffg1$FFG)[i],]
-	ffgdens[[i]] <- list()
-	## Find best data distribution (family) to use
-	ffgdens[[i]]$lm1 <- glm(Count ~ 1 + offset(Unit), data = mydat)
-	ffgdens[[i]]$po1 <- glm(Count ~ 1 + offset(log(Unit)), family = 'poisson', data = mydat)
-	ffgdens[[i]]$nb1 <- glm.nb(Count ~ 1 + offset(log(Unit)), data = mydat)
-	## Add a random effect for sample or season
-	ffgdens[[i]]$nb2 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat))
-	ffgdens[[i]]$nb3 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat))
-	ffgdens[[i]]$nb4 <- suppressWarnings(glmmTMB(Count ~ 1 + (1 | BarcodeID) + (1 | Season) + 
-		offset(log(Unit)), family = 'nbinom2', data = mydat))
-	## Add pre-post and FFG fixed effects
-	ffgdens[[i]]$nb5 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat))
-	ffgdens[[i]]$nb6 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
-		family = 'nbinom2', data = mydat))
-	ffgdens[[i]]$nb7 <- suppressWarnings(glmmTMB(Count ~ 0 + Study + (1 | BarcodeID) + (1 | Season) + 
-		offset(log(Unit)), family = 'nbinom2', data = mydat))	
-}
-	## Note: Any warnings here are just due to FFGs with NAs that therefore don't fit. Can be ignored.
-	names(ffgdens) <- levels(ffg1$FFG)
+	
+##### Build model for FFG change #####
 
-## Compare models using AIC
-ffgdensAIC <- AICtable(ffgdens)
-	## Negative binomial distribution always the best bet (over linear/Gaussian and Poisson).
-	## The choice of random effect or whether to include one is less clear.
-		## However, BarcodeID doesn't always fit, and a random effect for season is sensible. Use that.
-	## Including a pre-post term improves all models except for Collector-Filterers and -Gatherers.
-		## Critical to the analysis though, so use it anyway.
-	## Upshot is to use nb6 for all cases here.
+## Build lists
+ffgmod <- list()
+	ffgmod[[1]] <- ffgmod[[2]] <- ffgmod[[3]] <- list()
+	names(ffgmod) <- names(sampmod)
 
-## Do the same for biomass and length models (just the nb6 model version, only gaussian)
-ffgbiom <- ffgsize <- list()
-for(i in 1 : length(levels(ffg1$FFG))){
-	mydat <- ffg1[ffg1$FFG == levels(ffg1$FFG)[i],]
-	ffgbiom[[i]] <- suppressWarnings(glmmTMB(Biomass ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
-		data = mydat))
-	ffgsize[[i]] <- suppressWarnings(glmmTMB(Size ~ 0 + Study + (1 | Season), 
-		data = mydat))
-}
-	names(ffgbiom) <- names(ffgsize) <- names(ffgdens)
+## Start model selection using basic best model structure from sampmod (above)
+ffgmod[[1]]$nb1 <- glmmTMB(Count ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = ffg1)
+ffgmod[[1]]$nb2 <- glmmTMB(Count ~ 0 + Study * FFG + (1 | Season) + offset(log(Unit)), 
+	family = 'nbinom2', data = ffg1)
+ffgmod[[2]]$lm1 <- glmmTMB(Size ~ 0 + Study + (1 | Season), family = 'gaussian', data = ffg1)
+ffgmod[[2]]$lm2 <- glmmTMB(Size ~ 0 + Study * FFG + (1 | Season), family = 'gaussian', data = ffg1)
+ffgmod[[3]]$ga1 <- glmmTMB(Biomass ~ 0 + Study + (1 | Season) + offset(log(Unit)), 
+	family = Gamma(link = 'log'), data = ffg1)
+ffgmod[[3]]$ga2 <- glmmTMB(Biomass ~ 0 + Study * FFG + (1 | Season) + offset(log(Unit)), 
+	family = Gamma(link = 'log'), data = ffg1)
 
-## Combine all best models into a list
-ffgmod <- list(Density = lapply(ffgdens, function(x) x[['nb6']]), Biomass = ffgbiom, Size = ffgsize)
+## Get best model for Count, Size, and Biomass
+ffgmodAIC <- AICtable(ffgmod)
+	## Adding FFG is a good idea for all three model types
+bestmod1 <- bestmod(ffgmod)
+
+
+##### Get predicted values and plot FFG change #####
 
 ## Get parameters to predict
-	
+predparm1 <- data.frame(FFG = rep(levels(ffg1$FFG), 2), Season = 'Generic', Unit = 1,
+	Study = rep(levels(samp1$Study), c(length(levels(ffg1$FFG)), length(levels(ffg1$FFG)))))
+
 ## Get model-predicted values and confidence intervals
-predparm <- data.frame(Study = levels(ffg1$Study), Season = 'Generic', Unit = 1)
-fits1 <- lapply(ffgmod, function(x){
-	p1 <- lapply(x, predict, newdata = predparm, type = 'response', se.fit = TRUE, allow.new.levels = TRUE)
-	c1 <- lapply(x, confint)
-	data.frame(FFG = rep(levels(ffg1$FFG), length(levels(ffg1$Study))), 
-		Study = rep(levels(ffg1$Study), rep(length(levels(ffg1$FFG)), length(levels(ffg1$Study)))),
-		Fit = round(c(t(sapply(p1, function(x) x[['fit']]))), 2),
-		SELower = round(c(t(sapply(p1, function(x) x[['fit']] - x[['se.fit']]))), 2),
-		SEUpper = round(c(t(sapply(p1, function(x) x[['fit']] + x[['se.fit']]))), 2),
-		CILower = c(t(sapply(c1, function(x) x[1:2, 1]))),
-		CIUpper = c(t(sapply(c1, function(x) x[1:2, 2])))
-	)})
-for(i in 1: length(fits1)){
-	if(names(fits1)[i] == 'Density') {
-		fits1[[i]]$CILower <- round(exp(fits1[[i]]$CILower), 2)
-		fits1[[i]]$CIUpper <- round(exp(fits1[[i]]$CIUpper), 2)
-	} else {
-		fits1[[i]]$CILower <- round(fits1[[i]]$CILower, 2)
-		fits1[[i]]$CIUpper <- round(fits1[[i]]$CIUpper, 2)
+preds1l <- lapply(bestmod1, predict, newdata = predparm1, type = 'link', se.fit = TRUE, 
+	allow.new.levels = TRUE)
+preds1r <- lapply(bestmod1, predict, newdata = predparm1, type = 'response', se.fit = TRUE, 
+	allow.new.levels = TRUE)
+fits1 <- list()	
+for(i in 1 : length(bestmod1)){
+	fits1[[i]] <- data.frame(Study = predparm1$Study, FFG = predparm1$FFG)
+	fits1[[i]]$LinkFit <- preds1l[[i]]$fit
+	fits1[[i]]$LinkSE <- preds1l[[i]]$se.fit
+	fits1[[i]]$Fit <- preds1r[[i]]$fit
+	fits1[[i]]$SELower <- preds1r[[i]]$fit - preds1r[[i]]$se.fit
+	fits1[[i]]$SEUpper <- preds1r[[i]]$fit + preds1r[[i]]$se.fit
+	if(bestmod1[[i]][6]$modelInfo$family$link == 'log'){
+		fits1[[i]]$CILower95 <- exp(fits1[[i]]$LinkFit - (qnorm(0.975) * fits1[[i]]$LinkSE))
+		fits1[[i]]$CIUpper95 <- exp(fits1[[i]]$LinkFit + (qnorm(0.975) * fits1[[i]]$LinkSE))
+		fits1[[i]]$CILower50 <- exp(fits1[[i]]$LinkFit - (qnorm(0.75) * fits1[[i]]$LinkSE))
+		fits1[[i]]$CIUpper50 <- exp(fits1[[i]]$LinkFit + (qnorm(0.75) * fits1[[i]]$LinkSE))			
+	} else{
+		fits1[[i]]$CILower95 <- fits1[[i]]$LinkFit - (qnorm(0.975) * fits1[[i]]$LinkSE)
+		fits1[[i]]$CIUpper95 <- fits1[[i]]$LinkFit + (qnorm(0.975) * fits1[[i]]$LinkSE)
+		fits1[[i]]$CILower50 <- fits1[[i]]$LinkFit - (qnorm(0.75) * fits1[[i]]$LinkSE)
+		fits1[[i]]$CIUpper50 <- fits1[[i]]$LinkFit + (qnorm(0.75) * fits1[[i]]$LinkSE)		
 	}
-}
+}	
+	fits1 <- lapply(fits1, function(x){cbind(Study = x[, 1], FFG = x[, 2], round(x[, c(-1, -2)], 2))})
+	names(fits1) <- names(bestmod1)
 
 ## Plot combined graph of Whiting's and our data
 plotmod <- function(){
@@ -556,38 +516,99 @@ plotmod <- function(){
 	d1 <- 0.09
 	for(i in 1: length(fits1)){
 		mydat <- fits1[[i]]
-		plot(c(1, 5), c(min(mydat$CILower), max(mydat$CIUpper)), xlab = '', ylab = '', axes = FALSE, 
+		plot(c(1, 5), c(min(mydat$CILower95), max(mydat$CIUpper95)), xlab = '', ylab = '', axes = FALSE, 
 			type = 'n')
 		if(i == 1){
 			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
 			mtext(side = 2, bquote('Invertebrate density (#*'*m^-2*')'), line = 3.2)
-			legend(1.5, 4750, legend = c(2011, 2016), pt.cex = 1.5, pch = c(17, 16), col = c(2, 4), 
+			legend('topright', legend = c(2011, 2016), pt.cex = 1.5, pch = c(17, 16), col = c(2, 4), 
 				bty = 'n')
 		}
 		if(i == 2){
 			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
-			mtext(side = 2, bquote('Invertebrate biomass (mg*'*m^-2*')'), line = 3.2)
+			mtext(side = 2, 'Mean invertebrate length (mm)', line = 3.2)
 		}
 		if (i == 3){
 			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
 				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
-			mtext(side = 2, 'Invertebrate length (mm)', line = 3.2)
+			mtext(side = 2, bquote('Invertebrate biomass (mg*'*m^-2*')'), line = 3.2)
 		}
 		axis(2, las = 2)
 		box(bty = 'l')
-		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower, y1 = CIUpper, 
+		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower95, y1 = CIUpper95, 
 			code = 3, angle = 90, length = 0.05))
-		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower, y1 = CIUpper, 
+		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower95, y1 = CIUpper95, 
 			code = 3, angle = 90, length = 0.05))
+		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower50, y1 = CIUpper50, 
+			length = 0, col = 'grey50', lwd = 4))
+		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower50, y1 = CIUpper50, 
+			length = 0, col = 'grey50', lwd = 4))
 		points((1:5) - d1, mydat[mydat$Study == 'Pre', 'Fit'], pch = 17, col = 2, cex = 1.5)
 		points((1:5) + d1, mydat[mydat$Study == 'Post', 'Fit'], pch = 16, col = 4, cex = 1.5)
 		legend('topleft', legend = LETTERS[i], bty = 'n')
 	}
 }
-plotTypes(plotmod, 'ModelDensitiesCombined', 'Figures')
-	### STOPPED HERE.
-	### NOTE: This works, but size and biomass might better be fit by a nb or poisson after all. 
-		## Try model selection.
+plotTypes(plotmod, 'ModelDensitySizeBiomassFFG', 'Figures')
+
+
+##### Combine overall and FFG plots into a single panel graph #####
+
+## Use compilation of plotpred and plotmod
+plotall <- function(){
+	layout(matrix(1:6, 3, 2), widths = c(1, 3))
+	par(mar = c(2, 2.8, 0.2, 1), oma = c(1, 2, 0, 0), cex = 1)
+	for(i in 1:length(fits0)){
+		mydat <- fits0[[i]]
+		plot(c(0.5, 2.5), c(min(mydat$CILower95), max(mydat$CIUpper95)), xlab = '', ylab = '', 
+			axes = FALSE, type = 'n')
+		if(i != 3){axis(1, at = 1:2, labels = FALSE)
+		} else{axis(1, at = 1:2, labels = c('2011', '2016'))
+		}
+		axis(2, las = 2)
+		if(i == 1){mtext(side = 2, bquote('Invertebrate density (#*'*m^-2*')'), line = 3.5)}
+		if(i == 2){mtext(side = 2, 'Mean invertebrate size (mm)', line = 3.5)}
+		if(i == 3){mtext(side = 2, bquote('Invertebrate biomass (mg*'*m^-2*')'), line = 3.5)}
+		box(bty = 'l')
+		with(mydat, arrows(x0 = 1:2, y0 = CILower95, y1 = CIUpper95, code = 3, angle = 90, length = 0.05))
+		with(mydat, arrows(x0 = 1:2, y0 = CILower50, y1 = CIUpper50, length = 0, col = 'grey50', lwd = 4))
+		points(mydat$Fit, pch = c(17, 16), col = c(2, 4), cex = 1.5)
+		legend('top', LETTERS[i], bty = 'n')
+	}
+	d1 <- 0.09
+	for(i in 1:length(fits1)){
+		mydat <- fits1[[i]]
+		plot(c(1, 5), c(min(mydat$CILower95), max(mydat$CIUpper95)), xlab = '', ylab = '', axes = FALSE, 
+			type = 'n')
+		if(i == 1){
+			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+			legend('topright', legend = c(2011, 2016), pt.cex = 1.5, pch = c(17, 16), col = c(2, 4), 
+				bty = 'n')
+		}
+		if(i == 2){
+			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = FALSE)
+		}
+		if (i == 3){
+			axis(1, at = 1:5, padj = 1, mgp = c(3, 0.2, 0), labels = c('Scraper/\nGrazer', 
+				'Collector\nFilterer', 'Collector\nGatherer', 'Generalist', 'Predator'))
+		}
+		axis(2, las = 2)
+		box(bty = 'l')
+		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower95, y1 = CIUpper95, 
+			code = 3, angle = 90, length = 0.05))
+		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower95, y1 = CIUpper95, 
+			code = 3, angle = 90, length = 0.05))
+		with(mydat[mydat$Study == 'Pre',], arrows(x0 = (1:5) - d1, y0 = CILower50, y1 = CIUpper50, 
+			length = 0, col = 'grey50', lwd = 4))
+		with(mydat[mydat$Study == 'Post',], arrows(x0 = (1:5) + d1, y0 = CILower50, y1 = CIUpper50, 
+			length = 0, col = 'grey50', lwd = 4))
+		points((1:5) - d1, mydat[mydat$Study == 'Pre', 'Fit'], pch = 17, col = 2, cex = 1.5)
+		points((1:5) + d1, mydat[mydat$Study == 'Post', 'Fit'], pch = 16, col = 4, cex = 1.5)
+		if(par()$mfrow[2] == 2){legend('topleft', legend = LETTERS[i + 3], bty = 'n')
+		} else{legend('topleft', legend = LETTERS[i + 3], bty = 'n')}
+	}
+}
+plotTypes(plotall, 'ModelDensitySizeBiomassAll', 'Figures', width = 8, height = 8)
+
 
 ##### Ordination analysis #####
 
@@ -664,7 +685,8 @@ plotord <- function(){
 }
 plotTypes(plotord, 'Ordination', 'Figures', height = 6.5)
 	## See the loss of predators
-	### NOTE: Consider groups spp2D by FFG instead and showing that instead of sample points 
+	### STOPPED HERE.
+	## NOTE: Consider groups spp2D by FFG instead and showing that instead of sample points 
 		## (bigger deal, and less cluttered).
 
 ## See how taxa load on the ordination
@@ -723,7 +745,7 @@ richmod <- list()
 richmodAIC <- AICtable(richmod)
 	## Adding a season random effect doesn't really affect models; adding pre-post really helps.
 
-## Get best model for Count, Size, and Biomass
+## Get best model for richness and diversity
 bestmod2 <- bestmod(richmod)
 
 ## Get parameters to predict
@@ -732,36 +754,40 @@ predparm2 <- data.frame(Study = levels(rich2$Study), Season = 'Generic')
 ## Get model-predicted values and confidence intervals
 preds2 <- lapply(bestmod2, predict, newdata = predparm2, type = 'response', se.fit = TRUE, 
 	allow.new.levels = TRUE)
-cis2 <- lapply(bestmod2, confint)
+cis2v95 <- lapply(bestmod2, confint)
+cis2v50 <- lapply(bestmod2, confint, level = 0.5)
 fits2 <- list()
 for(i in 1 : length(bestmod2)){
 	fits2[[i]] <- data.frame(Study = levels(samp1$Study))
-	fits2[[i]]$Fit <- round(preds2[[i]]$fit, 2)
-	fits2[[i]]$SELower <- round(preds2[[i]]$fit - preds2[[i]]$se.fit, 2)
-	fits2[[i]]$SEUpper <- round(preds2[[i]]$fit + preds2[[i]]$se.fit, 2)
-	fits2[[i]]$CILower <- round(cis2[[i]][1:2, 1], 2)
-	fits2[[i]]$CIUpper <- round(cis2[[i]][1:2, 2], 2)
+	fits2[[i]]$Fit <- preds2[[i]]$fit
+	fits2[[i]]$SELower <- preds2[[i]]$fit - preds2[[i]]$se.fit
+	fits2[[i]]$SEUpper <- preds2[[i]]$fit + preds2[[i]]$se.fit
+	fits2[[i]]$CILower95 <- cis2v95[[i]][1:2, 1]
+	fits2[[i]]$CIUpper95 <- cis2v95[[i]][1:2, 2]
+	fits2[[i]]$CILower50 <- cis2v50[[i]][1:2, 1]
+	fits2[[i]]$CIUpper50 <- cis2v50[[i]][1:2, 2]
 }
+	fits2 <- lapply(fits2, function(x){cbind(Study = x[, 1], round(x[, -1], 2))})
 	names(fits2) <- names(bestmod2)
 	## Decline in all metrics from pre to post.
 
 ## Plot panel graph of overall change in Richness and Shannon's and Simpson's diversity
 plotpred2 <- function(){
 	ylabs <- c('Richness (taxa per sample)', "Shannon's diversity (H)", "Simpson's diversity (D)")
-	par(mfrow = c(3, 1), mar = c(2, 4.2, 0.1, 0.1), cex = 1)
+	par(mfrow = c(3, 1), mar = c(2, 5, 0.1, 0.1), cex = 1)	
 	for(i in 1:3){
 		mydat <- fits2[[i]]
-		plot(c(0.5, 2.5), c(min(mydat$CILower), max(mydat$CIUpper)), xlab = '', ylab = '', axes = FALSE, 
+		plot(c(0.5, 2.5), c(min(mydat$CILower95), max(mydat$CIUpper95)), xlab = '', ylab = '', axes = FALSE, 
 			type = 'n')
 		if(i != 3){axis(1, at = 1:2, labels = FALSE)
 		} else {axis(1, at = 1:2, labels = c('2011', '2016'))}
 		axis(2, las = 2)
 		mtext(side = 2, ylabs[i], line = 3.2)
 		box(bty = 'l')
-		with(mydat, arrows(x0 = 1:2, y0 = CILower, y1 = CIUpper, code = 3, angle = 90, length = 0.05))
+		with(mydat, arrows(x0 = 1:2, y0 = CILower95, y1 = CIUpper95, code = 3, angle = 90, length = 0.05))
+		with(mydat, arrows(x0 = 1:2, y0 = CILower50, y1 = CIUpper50, length = 0, col = 'grey50', lwd = 4))
 		points(mydat$Fit, pch = c(17, 16), col = c(2, 4), cex = 1.5)
 		legend('topright', legend = LETTERS[i], bty= 'n')
-		legend(1.6, 23.3, legend = c('2011', '2016'), pch = c(17, 16), pt.cex = 1.5, col = c(2, 4), bty = 'n')
 	}
 }
 plotTypes(plotpred2, 'ModelRichnessDiversity', 'Figures', width = 4)
