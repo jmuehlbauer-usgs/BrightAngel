@@ -143,19 +143,19 @@ for(i in 1 : 2){
 ## Rename Benthic Area column for consistency
 colnames(dat$Benthic)[which(colnames(dat$Benthic) == 'SampleArea')] <- 'Area'
 
-## Keep only 1000 m benthics
-dat$Benthic <- dat$Benthic[dat$Benthic$RiverMile == 1000,]
-	dat$Benthic <- droplevels(dat$Benthic)
-
 ## Keep only columns of interest
 dat0 <- lapply(dat, function(x){
-	mycols <- c('BarcodeID', 'Date', 'Season', ifelse('Density' %in% colnames(x), 'Area', 'Volume'),
+	mycols <- c('BarcodeID', 'Date', 'Season', 
+		ifelse('RiverMile' %in% colnames(x), 'RiverMile', 'BarcodeID'), 
+		ifelse('Density' %in% colnames(x), 'Area', 'Volume'), 
 		'SpeciesID', 'FFG', 'CountTotal', 'Size', 'Biomass')
 	x[, mycols]
 	})
-dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'Unit', 'SpeciesID', 'FFG', 
-	'Count', 'Size', 'Biomass'))
-
+dat0 <- lapply(dat0, setNames, nm = c('BarcodeID', 'Date', 'Season', 'RiverMile', 'Unit', 'SpeciesID', 
+	'FFG', 'Count', 'Size', 'Biomass'))
+	dat0$Whiting$RiverMile <- 1000
+	
+	
 ##### Clean up taxa #####
 
 ## Get taxa list of present taxa
@@ -244,12 +244,18 @@ dat4 <- lapply(dat4, transform, SpeciesID = as.factor(SpeciesID))
 dat4 <- lapply(dat4, function(x) x[order(x[, 'Date'], x[, 'BarcodeID'], x[, 'SpeciesID']),])
 	dat4 <- lapply(dat4, droplevels)
 
+## Keep only 1000 m benthic site
+dat5 <- dat4
+dat5$Benthic <- dat4$Benthic[dat4$Benthic$RiverMile == 1000,]
+	dat5$Benthic <- droplevels(dat5$Benthic)
+dat5 <- lapply(dat5, subset, select = -RiverMile)
+
 ## Add consistent factor levels
-levspp <- sort(unique(unlist(lapply(dat4, function(x) levels(x[, 'SpeciesID'])))))
-levFFG <- unique(unlist(lapply(dat4, function(x) levels(x[, 'FFG']))))
+levspp <- sort(unique(unlist(lapply(dat5, function(x) levels(x[, 'SpeciesID'])))))
+levFFG <- unique(unlist(lapply(dat5, function(x) levels(x[, 'FFG']))))
 	levFFG <- ifelse(length(levFFG) == 6, c('ScraperGrazer', 'CollectorFilterer', 
 		'CollectorGatherer', 'Generalist', 'Predator'), levFFG)
-dat4 <- lapply(dat4, function(x){
+dat5 <- lapply(dat5, function(x){
 	levspp1 <- levspp[!(levspp %in% levels(x[, 'SpeciesID']))]
 	levFFG1 <- levFFG[!(levFFG %in% levels(x[, 'FFG']))]
 	levels(x[, 'SpeciesID']) <- c(levels(x[, 'SpeciesID']), levspp[!(levspp %in% levels(x[, 'SpeciesID']))])
@@ -264,7 +270,7 @@ dat4 <- lapply(dat4, function(x){
 ##### Group specimens by Sample #####
 
 ## Create new list, with samples summed.
-samp <- combinefx(dat4, 'BarcodeID')
+samp <- combinefx(dat5, 'BarcodeID')
 	samp <- lapply(samp, subset, select = -SpeciesID)
 
 ## Combine benthic and Whiting into single dataframe for analysis
@@ -432,7 +438,7 @@ plotTypes(plotpred, 'ModelDensitySizeBiomassOverall', 'Figures', width = 4)
 ##### Group specimens by FFG #####
 
 ## Create new list, with samples summed by FFG
-ffg <- combinefx(dat4, 'FFG')
+ffg <- combinefx(dat5, 'FFG')
 	ffg <- lapply(ffg, subset, select = -SpeciesID)
 
 ## Get relative counts and biomasses
@@ -613,7 +619,7 @@ plotTypes(plotall, 'ModelDensitySizeBiomassAll', 'Figures', width = 8, height = 
 ##### Ordination analysis #####
 
 ## Put Whiting and our benthic data in a single dataframe
-ord1 <- rbind(dat4$Whiting, dat4$Benthic)
+ord1 <- rbind(dat5$Whiting, dat5$Benthic)
 	ord1$Density <- round(ord1$Count / ord1$Unit)
 	ord1$Study <- factor(ifelse(year(ord1$Date) < 2015, 'Pre', 'Post'), levels = c('Pre', 'Post'))
 
@@ -792,18 +798,53 @@ plotpred2 <- function(){
 }
 plotTypes(plotpred2, 'ModelRichnessDiversity', 'Figures', width = 4)
 	
-## Plot species accumulation curves
-spac <- suppressWarnings(lapply(ordlist, specaccum))
+##### Plot species accumulation curves #####
+
+## Get species accumulation for Whiting and benthic data (1000 m only)
+spac0 <- suppressWarnings(lapply(ordlist, specaccum))
+
+## Compare species accumulation from all benthic data (not just 1000 m)
+	## As a synoptic comparison
+ord1all <- rbind(dat4$Whiting, dat4$Benthic)
+ord2all <- matrix(nrow = length(unique(ord1all$BarcodeID)), ncol = length(unique(ord1all$SpeciesID)))
+	rows <- rownames(ord2all) <- sort(unique(ord1all$BarcodeID))
+	cols <- colnames(ord2all) <- sort(unique(ord1all$SpeciesID))
+	ord2all[is.na(ord2all)] <- 0
+rownumall <-match(ord1all$BarcodeID, rows)
+colnumall <- match(ord1all$SpeciesID, cols)
+for(i in 1 : dim(ord1all)[1]){
+	ord2all[rownumall[i], colnumall[i]] <- ord1all$Count[i]
+}
+ordlist1 <- list(Whiting = ord2all[substr(rownames(ord2all), 1, 1) != 'B', ], 
+	Benthic = ord2all[substr(rownames(ord2all), 1, 1) == 'B', ])
+	ordlist1 <- lapply(ordlist1, function(x) x[, which(colSums(x) > 0)])
+spac1 <- suppressWarnings(lapply(ordlist1, specaccum))
+
 plotaccum <- function(){
-	par(mar = c(4, 4, 0.2, 1), cex = 1)
-	plot(spac[[1]], col = 2, lwd = 1, ci.type = 'poly', ci.col = 'lightpink', ci.lty = 0, xlab = 'Number of samples', ylab = 'Cumulative taxa', bty = 'n', axes = FALSE, xlim = c(0, 25))
-	plot(spac[[2]], add = TRUE, col = 4, lwd = 1, ci.type = 'poly', ci.col = 'lightblue', ci.lty = 0)
+	par(mar = c(4, 4, 0.4, 0.6), cex = 1, fig = c(0, 1, 0, 1), xaxs = 'i', yaxs = 'i')
+	plot(spac0[[1]], col = 2, lwd = 1, ci.type = 'poly', ci.col = 'lightpink', ci.lty = 0, 
+		xlab = 'Number of samples', ylab = 'Cumulative taxa', bty = 'n', axes = FALSE, xlim = c(0, 25),
+		ylim = c(0, 30))
+	plot(spac0[[2]], add = TRUE, col = 4, lwd = 1, ci.type = 'poly', ci.col = 'lightblue', ci.lty = 0)
 	axis(1, at = seq(0, 25, 5))
 	axis(2, las = 2)
 	box(bty = 'l')
-	legend(20, 23, legend = c('2011', '2016'), col = c(2, 4), lwd = 1, bty = 'n')
+	legend(17, 21, legend = c('2011', '2016', '', '2016 synoptic', '(Creek-wide)'), 
+		col = c(2, 4, NA, 4, NA), lwd = c(1, 1, 0, 1, 0), lty = c(1, 1, 0, 2, 0), bty = 'n')
+	par(fig = c(0.57, 0.97, 0.1, 0.5), xpd = TRUE, new = TRUE)
+	plot(spac0[[1]], col = 2, lwd = 1, ci.type = 'poly', ci.col = 'lightpink', ci.lty = 0, 
+		xlab = '', ylab = '', bty = 'n', axes = FALSE, xlim = c(0, 80), ylim = c(0, 30))
+	plot(spac1[[2]], add = TRUE, col = 4, lwd = 1, lty = 2, ci.type = 'poly', ci.col = 'lightblue', 
+		ci.lty = 0)
+	axis(1, padj = -1, at = seq(0, 80, 20), tcl = -0.35)
+	axis(1, padj = -1, at = seq(10, 70, 20), labels = FALSE, tick = TRUE, tcl = -0.2)
+	axis(2, las = 2, hadj = 0.5, at = seq(0, 30, 10), tcl = -0.35)
+	axis(2, at = seq(5, 25, 10), labels = FALSE, tick = TRUE, tcl = -0.2)	
+	mtext(side = 1, '# samples', line = 1.4)
+	mtext(side = 2, '# taxa', line = 1.7)
+	box(bty = 'l')
 }
-suppressWarnings(plotTypes(plotaccum, 'SpeciesAccumulation', 'Figures', height = 6.5))
+plotTypes(plotaccum, 'SpeciesAccumulation', 'Figures', height = 6.5)
 	## Note: Warnings here have to do with plotting and are overridden. Can be ignored.
 
 ### NEXT STEPS: 
